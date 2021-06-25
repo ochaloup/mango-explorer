@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -ueo pipefail
+
+cd /srv/app/mango-explorer
+
+./bin/deploy-mango-explorer-image
+
+systemctl restart mango_price_collector.service

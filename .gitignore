@@ -26,3 +26,25 @@ configuration.json
 wallet.json
 id.json
 private.py
+
+# Pycharm
+.idea
+
+# Emacs
+*#
+.pyc
+*~
+
+# Node.js
+node_modules
+
+# Hidden files
+.*
+
+# VS code
+.vscode/
+
+# Exceptions
+!.flake8
+!.pre-commit-config.yaml
+!.editorconfig

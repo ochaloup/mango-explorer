@@ -1,0 +1,27 @@
+[config]
+
+base = "common.toml"
+
+[account]
+
+cluster_url = "https://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
+address = "7nmgeDXsyJLB9Re9bM2z7n5RsYhxgeoWUWes8yJAtZja"
+key_file = "/srv/key/mango-explorer/mu1/7nmgeDXsyJLB9Re9bM2z7n5RsYhxgeoWUWes8yJAtZja.json"
+
+[paths]
+
+trader_heartbeat_dir = "run/solana_trader_serum_raysol"
+account_balances_heartbeat = "run/balances_collector_serum_raysol/heartbeat"
+
+[marketmaker]
+
+pair = "RAY/SOL"
+spread_ratio = "0.001"
+position_size_ratios = ["0.4", "0.4"]
+oracle_providers = ["ftx"]
+# price_weights determines the weight of oracles in calculating fair price
+price_weights = [1]
+existing_order_tolerance = "0.001"
+confidence_interval_level = [1]
+leverage = 1
+poll_interval_seconds = 20

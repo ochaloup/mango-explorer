@@ -1,0 +1,37 @@
+[config]
+
+base = "common.toml"
+
+[paths]
+# paths are automatically prefixed by PREFIX environment variable
+heartbeat = 'run/mango_price_collector/heartbeat'
+
+[price_collector]
+server_name = "mu1"
+pause_duration = 5
+# number of observation per file
+max_number_of_observations = 1000
+
+        # symbols are pairs of oracle name and symbols queried from given oracle.
+        [price_collector.symbols]
+        FTX = [
+            "SOL-PERP", "SOL/USD", "SOL/USDT", "SOL/BTC",
+            "MNGO-PERP", "MNGO/USD",
+            "BTC/USD", "BTC/USDT", "BTC/EUR", "BTC-PERP",
+            "ETH/USD", "ETH/USDT", "ETH/BTC", "ETH-PERP",
+            "USDT/USD", "USDT-PERP",
+            "SRM/USD", "SRM/USDT", "SRM-PERP",
+            "RAY/USD", "RAY-PERP",
+            "COPE/USD"
+        ]
+        PYTH = [
+            #"SOL/USDC", "SOL/USDT", "MNGO/USDC", "MNGO/USDT"
+            "MNGO/USD", "BTC/USD", "ETH/USD", "SOL/USD", "USDT/USD", "SRM/USD", "RAY/USD",
+            "COPE/USD"
+        ]
+        RAYDIUM_trades = [
+            "MNDE-mSOL", "SOL-USDC", "xCOPE-USDC", "ETH-SRM", "SOL-USDC", "stSOL-USDC", "mSOL-RAY",
+            "BTC-USDC", "RAY-USDC", "USDT-USDC", "SOL-USDT", "RAY-ETH", "SRM-USDC", "ETH-SOL",
+            "SRM-USDT", "BTC-USDT", "ETH-USDC", "RAY-SOL", "COPE-USDC", "RAY-USDT", "BTC-SRM",
+            "LARIX-RAY", "mSOL-SOL", "SRM-SOL", "RAY-SRM", "ETH-USDT", "SOL-SDC", "mSOL-USDC"
+        ]

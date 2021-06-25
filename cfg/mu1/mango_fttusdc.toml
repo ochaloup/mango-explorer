@@ -1,0 +1,30 @@
+[config]
+
+base = "common.toml"
+
+[account]
+
+cluster_url = "https://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
+address = "Hquj2QqZAcMDwYYTuhFW1WY4a48zi7MvGc7bJ8FvZMAU"
+key_file = "/srv/key/mango-explorer/mu1/Hquj2QqZAcMDwYYTuhFW1WY4a48zi7MvGc7bJ8FvZMAU.json"
+watch_markets = ["FTT/USDC"]
+
+[paths]
+
+trader_heartbeat_dir = "run/solana_trader_mango_fttusdc"
+account_balances_heartbeat = "run/balances_collector_mango_fttusdc/heartbeat"
+
+[marketmaker]
+
+pair = "FTT/USDC"
+min_quote_size = "4"
+spread_ratio = "0.0012"
+position_size_ratios = ["0.4", "0.4"]
+oracle_providers = ["ftx"]
+# price_weights determines the weight of oracles in calculating fair price
+price_weights = [1]
+existing_order_price_tolerance = "0.0005"
+existing_order_quantity_tolerance = "0.3"
+confidence_interval_level = [1]
+leverage = "3"
+poll_interval_seconds = 5

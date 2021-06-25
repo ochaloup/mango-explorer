@@ -1,0 +1,4 @@
+json_rpc_url: "https://api.mainnet-beta.solana.com"
+websocket_url: "wss://api.mainnet-beta.solana.com/"
+keypair_path: "/srv/key/mango-explorer/mu1/G8kHCcbsHL5hwGYWeGJNPxti65kW6PKiiVKoKKUfHbch.json"
+commitment: "confirmed"

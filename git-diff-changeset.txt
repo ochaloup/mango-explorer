@@ -1,0 +1,258 @@
+
+[chalda@fedora mango-explorer (master-squashed-rebased-v3.2.5|REBASE 1/1)]$ git st
+interactive rebase in progress; onto aabbd19
+Last command done (1 command done):
+   pick 71149f7 First cut at a lot of V3 code.
+No commands remaining.
+You are currently rebasing branch 'master-squashed-rebased-v3.2.5' on 'aabbd19'.
+  (fix conflicts and then run "git rebase --continue")
+  (use "git rebase --skip" to skip this patch)
+  (use "git rebase --abort" to check out the original branch)
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   .editorconfig
+        modified:   .gitignore
+        modified:   .mypy.ini
+        new file:   .pre-commit-config.yaml
+        new file:   HOWTO.rst
+        new file:   bin/deploy-mango-balances-collector
+        new file:   bin/deploy-mango-explorer-image
+        new file:   bin/deploy-mango-price-collector
+        new file:   bin/hedger
+        new file:   bin/recode-key
+        new file:   bin/recode-solana-private-key
+        new file:   cfg/docker.toml
+        new file:   cfg/mu1/common.toml
+        new file:   cfg/mu1/mango_copeusdc.toml
+        new file:   cfg/mu1/mango_ethusdc.toml
+        new file:   cfg/mu1/mango_fttusdc.toml
+        new file:   cfg/mu1/mango_price_collector.toml
+        new file:   cfg/mu1/mango_rayusdc.toml
+        new file:   cfg/mu1/mango_rayusdc_2.toml
+        new file:   cfg/mu1/mango_solperp.toml
+        new file:   cfg/mu1/mango_solusdc.toml
+        new file:   cfg/mu1/mango_srmusdc.toml
+        new file:   cfg/mu1/marinade_staking.yaml
+        new file:   cfg/mu1/serum_msolsol.toml
+        new file:   cfg/mu1/serum_msolusdc.toml
+        new file:   cfg/mu1/serum_raysol.toml
+        new file:   cfg/mu1/serum_solusdc.toml
+        new file:   devel-keys/mango-explorer/empty.json
+        new file:   docker-compose.yml
+        new file:   docs/MarketMaking.md
+        new file:   docs/PotentialBugs.md
+        new file:   mango/arbitrage/__init__.py
+        new file:   mango/async_util.py
+        new file:   mango/collector/account_balances.py
+        new file:   mango/collector/orca_apy.py
+        new file:   mango/collector/price_collector.py
+        new file:   mango/configuration.py
+        new file:   mango/createmarketinstructionbuilder.py
+        new file:   mango/exceptions.py
+        new file:   mango/heartbeat.py
+        new file:   mango/idsjsontokenlookup.py
+        new file:   mango/logging_util.py
+        new file:   mango/main_thread_exceptions.py
+        new file:   mango/marinade.py
+        new file:   mango/marketinstructionbuilder.py
+        new file:   mango/marketmaker/main.py
+        new file:   mango/marketmaking/hedger.py
+        new file:   mango/marketmaking/modelstate.py
+        new file:   mango/marketmaking/modelvalues.py
+        new file:   mango/marketmaking/orderchain/confidenceintervalspreadelement.py
+        new file:   mango/marketmaking/orderchain/fixedratioselement.py
+        new file:   mango/marketmaking/ordertracker.py
+        new file:   mango/marketmaking/valuemodel.py
+        new file:   mango/oracles/binance/__init__.py
+        new file:   mango/oracles/binance/binance.py
+        new file:   mango/oracles/kraken/__init__.py
+        new file:   mango/oracles/kraken/kraken.py
+        new file:   mango/oracles/msol.py
+        new file:   mango/oracles/raydium/__init__.py
+        new file:   mango/oracles/raydium/raydium.py
+        new file:   mango/perpmarketinfo.py
+        new file:   mango/perpmarketinstructionbuilder.py
+        new file:   mango/pricemodel/__init__.py
+        new file:   mango/pricemodel/portfoliostate.py
+        new file:   mango/pricemodel/simplepricemodel.py
+        new file:   mango/serummarketinstructionbuilder.py
+        new file:   mango/spltokenlookup.py
+        new file:   mango/spotmarketinfo.py
+        new file:   mango/spotmarketinstructionbuilder.py
+        new file:   mango/tokeninfo.py
+        new file:   mango/tokenlookup.py
+        new file:   mango/types_.py
+        new file:   pre-commit.docker.sample
+        new file:   tests/test_tokenlookup.py
+
+Unmerged paths:
+  (use "git restore --staged <file>..." to unstage)
+  (use "git add/rm <file>..." as appropriate to mark resolution)
+        both modified:   .dockerignore
+        both modified:   .flake8
+        both modified:   Dockerfile
+        deleted by us:   Liquidation.ipynb
+        both modified:   Makefile
+        deleted by us:   Pandas.ipynb
+        both modified:   README.md
+        deleted by us:   ShowAccount.ipynb
+        deleted by us:   ShowAllMarginAccounts.ipynb
+        both added:      bin/airdrop
+        both added:      bin/cancel-my-orders
+        both added:      bin/cancel-order
+        both modified:   bin/close-wrapped-sol-account
+        both added:      bin/crank-market
+        both added:      bin/deposit
+        both added:      bin/ensure-account
+        both added:      bin/ensure-associated-token-account
+        both added:      bin/ensure-open-orders
+        both modified:   bin/fetch-price
+        deleted by us:   bin/group-balance-wallet
+        both added:      bin/init-account
+        both modified:   bin/liquidate-single-account
+        both modified:   bin/liquidator
+        both modified:   bin/liquidator-single-run
+        both added:      bin/log-subscribe
+        both added:      bin/marketmaker
+        both added:      bin/mint
+        both modified:   bin/notify-below-minimum-sol-balance
+        both added:      bin/place-order
+        both added:      bin/redeem-mango
+        both modified:   bin/report-transactions
+        both modified:   bin/send-sols
+        both modified:   bin/send-token
+        both added:      bin/settle-market
+        both added:      bin/show-account-balances
+        both modified:   bin/show-account-info
+        both added:      bin/show-accounts
+        both added:      bin/show-address
+        both modified:   bin/show-group
+        both added:      bin/show-market
+        both added:      bin/show-model-state
+        both added:      bin/show-my-orders
+        both added:      bin/show-open-orders
+        both added:      bin/show-orders
+        both added:      bin/show-serum-open-orders
+        both modified:   bin/show-token-balance
+        both modified:   bin/show-wrapped-sol
+        both modified:   bin/simple-marketmaker
+        both modified:   bin/unwrap-sol
+        both added:      bin/version
+        both added:      bin/watch-address
+        both added:      bin/watch-liquidations
+        both added:      bin/watch-minimum-balances
+        both added:      bin/who-am-i
+        both added:      bin/withdraw
+        both modified:   bin/wrap-sol
+        both added:      data/ids.json
+        both added:      data/solana.tokenlist.devnet.json
+        both added:      data/solana.tokenlist.json
+        both modified:   docs/LiquidatorQuickstart.md
+        both added:      docs/MarketmakingQuickstart.md
+        both modified:   mango/__init__.py
+        both added:      mango/account.py
+        both modified:   mango/accountinfo.py
+        both added:      mango/accountinfoconverter.py
+        both modified:   mango/accountliquidator.py
+        both modified:   mango/accountscout.py
+        both added:      mango/cache.py
+        both added:      mango/client.py
+        both added:      mango/combinableinstructions.py
+        both modified:   mango/constants.py
+        both modified:   mango/context.py
+        both added:      mango/contextbuilder.py
+        both added:      mango/createmarketoperations.py
+        both modified:   mango/encoding.py
+        both added:      mango/ensuremarketloaded.py
+        both modified:   mango/group.py
+        both added:      mango/healthcheck.py
+        both added:      mango/idsjsonmarketlookup.py
+        both added:      mango/instructionreporter.py
+        both modified:   mango/instructions.py
+        both added:      mango/inventory.py
+        both modified:   mango/layouts/layouts.py
+        both modified:   mango/liquidatablereport.py
+        both modified:   mango/liquidationevent.py
+        both modified:   mango/liquidationprocessor.py
+        both added:      mango/lotsizeconverter.py
+        both added:      mango/mangoinstruction.py
+        both modified:   mango/market.py
+        both modified:   mango/marketmaking/__init__.py
+        both added:      mango/marketmaking/marketmaker.py
+        both added:      mango/marketmaking/modelstatebuilder.py
+        both added:      mango/marketmaking/modelstatebuilderfactory.py
+        both added:      mango/marketmaking/orderchain/biasquoteonpositionelement.py
+        both added:      mango/marketmaking/orderchain/chain.py
+        both added:      mango/marketmaking/orderchain/chainbuilder.py
+        both added:      mango/marketmaking/orderchain/element.py
+        both added:      mango/marketmaking/orderchain/minimumchargeelement.py
+        both added:      mango/marketmaking/orderchain/preventpostonlycrossingbookelement.py
+        both added:      mango/marketmaking/orderreconciler.py
+        both added:      mango/marketmaking/reconciledorders.py
+        both added:      mango/marketmaking/toleranceorderreconciler.py
+        both added:      mango/marketoperations.py
+        both modified:   mango/metadata.py
+        both modified:   mango/notification.py
+        both modified:   mango/observables.py
+        both modified:   mango/openorders.py
+        both modified:   mango/oracle.py
+        both modified:   mango/oraclefactory.py
+        both modified:   mango/oracles/ftx/ftx.py
+        both modified:   mango/oracles/pythnetwork/pythnetwork.py
+        deleted by us:   mango/oracles/serum/serum.py
+        both added:      mango/oracles/stub/stub.py
+        both added:      mango/orderbookside.py
+        both added:      mango/orders.py
+        both modified:   mango/ownedinstrumentvalue.py
+        both added:      mango/parse_account_info_to_orders.py
+        both added:      mango/perpaccount.py
+        both added:      mango/perpeventqueue.py
+        both added:      mango/perpmarket.py
+        both added:      mango/perpmarketdetails.py
+        both added:      mango/perpmarketoperations.py
+        both added:      mango/perpopenorders.py
+        both added:      mango/placedorder.py
+        both modified:   mango/reconnectingwebsocket.py
+        both modified:   mango/retrier.py
+        both added:      mango/rootbank.py
+        both added:      mango/serumeventqueue.py
+        both added:      mango/serummarket.py
+        both added:      mango/serummarketlookup.py
+        both added:      mango/serummarketoperations.py
+        both added:      mango/simplemarketmaking/simplemarketmaker.py
+        both modified:   mango/spotmarket.py
+        both added:      mango/spotmarketoperations.py
+        both modified:   mango/token.py
+        both modified:   mango/tokenaccount.py
+        deleted by us:   mango/tokenvalue.py
+        both modified:   mango/tradeexecutor.py
+        both modified:   mango/transactionscout.py
+        both modified:   mango/wallet.py
+        both modified:   mango/walletbalancer.py
+        both added:      mango/watcher.py
+        both added:      mango/watchers.py
+        both added:      mango/websocketsubscription.py
+        deleted by us:   requirements.txt
+        both added:      scripts/random-taker
+        both modified:   tests/context.py
+        both modified:   tests/fakes.py
+        both modified:   tests/layouts/test_layouts.py
+        both added:      tests/marketmaking/orderchain/test_biasquoteonpositionelement.py
+        both added:      tests/marketmaking/test_orderreconciler.py
+        both added:      tests/marketmaking/test_toleranceorderreconciler.py
+        deleted by us:   tests/mocks.py
+        both added:      tests/test_account.py
+        both modified:   tests/test_constants.py
+        both modified:   tests/test_context.py
+        both modified:   tests/test_group.py
+        both modified:   tests/test_instructions.py
+        both modified:   tests/test_instructiontype.py
+        deleted by us:   tests/test_liquidatablereport.py
+        both modified:   tests/test_liquidationevent.py
+        deleted by us:   tests/test_liquidationprocessor.py
+        both added:      tests/test_marketlookup.py
+        both added:      tests/test_perpeventqueue.py
+        both modified:   tests/test_retrier.py
+        both modified:   tests/test_spotmarket.py
+        both modified:   tests/test_transactionscout.py

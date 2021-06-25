@@ -1,0 +1,77 @@
+[config]
+base = "mu1/common.toml"
+
+[database]
+dashboard_url = "postgresql+psycopg2://postgres:proser@127.0.0.1/pistol"
+
+[account]
+key_file = "/srv/key/mango-explorer/empty.json"
+orca_proxy_url = "http://localhost:1080"
+
+[marketmaker]
+
+pair = "MSOL/USDC"
+min_quote_size = "0.5"
+spread_ratio = "0.0008"
+position_size_ratios = ["0", "0.2"]
+oracle_providers = ["ftx"]
+# price_weights determines the weight of oracles in calculating fair price
+price_weights = [1]
+oracle_coefs = ["0.2"]
+existing_order_tolerance = "0.0002"
+confidence_interval_level = [1]
+leverage = 1
+poll_interval_seconds = 10
+
+
+[marinade_staking]
+
+delay_after_staking_seconds = 5
+# if marinade_staking_path empty str -> do not stake
+config_path = "/srv/app/mango-explorer/cfg/mu1/marinade_staking.yaml"
+poll_interval_seconds = 1
+min_staking_quantity = "0.1"
+keep_amount_sol = "0.2"
+wsol_address = "HSgLxLUF3zTNVFzgQjKXpt9aKhf1m9wmyaYCMRFpaYUn"
+staking_on = "False"
+
+[simplearbitrage]
+
+[simplearbitrage.msolusdc]
+
+poll_interval_seconds = 1
+delay_after_arbitrage_seconds = 60
+market_symbol = "MSOL/USDC"
+orca_symbol = "mSOL_USDC"
+oracle_provider_name = "serum"
+profitable_relative_deviation = 0
+threshold_relative_quantity = "0.0005"
+position_size_ratios = ["0.9", "0"]
+min_trade_size = "0.1"
+profitability_scaling_size = "2"
+
+[simplearbitrage.msolsol]
+
+poll_interval_seconds = 1
+delay_after_arbitrage_seconds = 60
+market_symbol = "MSOL/SOL"
+orca_symbol = "mSOL_SOL"
+oracle_provider_name = "msol"
+profitable_relative_deviation = 0
+threshold_relative_quantity = "0.0005"
+position_size_ratios = ["0.9", "0"]
+min_trade_size = "0.1"
+profitability_scaling_size = "2"
+
+[simplearbitrage.solusdc]
+
+poll_interval_seconds = 1
+delay_after_arbitrage_seconds = 60
+market_symbol = "SOL/USDC"
+orca_symbol = "SOL_USDC"
+oracle_provider_name = "serum"
+profitable_relative_deviation = 0
+threshold_relative_quantity = "0.0005"
+position_size_ratios = ["0.9", "0"]
+min_trade_size = "0.1"
+profitability_scaling_size = "2"

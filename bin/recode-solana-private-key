@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+
+import json
+import sys
+import base64
+
+print(base64.b64encode(bytes(json.load(sys.stdin))).decode('ascii'))

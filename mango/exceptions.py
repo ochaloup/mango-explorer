@@ -1,0 +1,2 @@
+class UnknownOracleMarketException(Exception):
+    pass
