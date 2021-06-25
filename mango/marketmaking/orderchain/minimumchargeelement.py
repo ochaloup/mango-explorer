@@ -57,6 +57,10 @@ class MinimumChargeElement(PairwiseElement):
             # Zero minimum charge results in no changes to orders.
             return buy, sell
 
+        if len(model_state.prices) > 1:  # CHKP change
+            raise NotImplementedError("This is a Chainkeepers change which was not adapted to work with ratioselement.py")
+        model_state_price: mango.Price = list(model_state.prices.values())[0]
+
         # From Daffy on 26th July 2021: max(pyth_conf * 2, price * min_charge)
         # (Private chat link: https://discord.com/channels/@me/832570058861314048/869208592648134666)
         new_buy: typing.Optional[mango.Order] = buy
@@ -66,7 +70,7 @@ class MinimumChargeElement(PairwiseElement):
         current_charge: Decimal
         new_price: Decimal
         if buy is not None:
-            measurement_price = model_state.price.top_bid if self.minimumcharge_from_bid_ask else model_state.price.mid_price
+            measurement_price = model_state_price.top_bid if self.minimumcharge_from_bid_ask else model_state_price.mid_price
             minimum_charge = measurement_price * minimum_charge_ratio
             current_charge = measurement_price - buy.price
             if current_charge < minimum_charge:
@@ -77,7 +81,7 @@ class MinimumChargeElement(PairwiseElement):
     New: {new_buy}""")
 
         if sell is not None:
-            measurement_price = model_state.price.top_ask if self.minimumcharge_from_bid_ask else model_state.price.mid_price
+            measurement_price = model_state_price.top_ask if self.minimumcharge_from_bid_ask else model_state_price.mid_price
             minimum_charge = measurement_price * minimum_charge_ratio
             current_charge = sell.price - measurement_price
             if current_charge < minimum_charge:

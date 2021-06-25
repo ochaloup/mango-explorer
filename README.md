@@ -1,3 +1,40 @@
+ABOUT
+=====
+
+This is a ChainKeepers fork of the mango-explorer marketmaker.  For the original
+readme, refer to the upstream version.
+
+It is encouraged, whenever possible, that chaneges are done in
+the core report "marketmaker" app which uses this fork as a library.
+
+NOTES
+=====
+
+Have a look into  [Potential bugs](docs/PotentialBugs.md).
+
+Cookbook about how to set-up SOL/USDC and mSOL/USDC marketmaking can be found in [HOWTO](HOWTO.rst).
+
+INSTALL
+=======
+
+pre-commit
+++++++++++
+
+We use pre-commit to maintain high quality of code we push to master.  We push
+everything into master :-)
+
+To set it up, you only need to install pre-commit python suit and install a hook
+into your repo clone.  The rest is already setup and commited in master.
+
+To install, issue
+
+  pip install pre-commit
+  pre-commit install
+
+Congratulation, you'we made it.
+
+
+
 # 🥭 Mango Explorer
 
 ## ⚠ Warning

@@ -222,6 +222,9 @@ class Order:
 
 
 class OrderBook:
+    bids: typing.Sequence[Order] = []
+    asks: typing.Sequence[Order] = []
+
     def __init__(self, symbol: str, lot_size_converter: LotSizeConverter, bids: typing.Sequence[Order], asks: typing.Sequence[Order]) -> None:
         self.symbol: str = symbol
         self.__lot_size_converter: LotSizeConverter = lot_size_converter

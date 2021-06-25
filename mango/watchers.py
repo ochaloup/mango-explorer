@@ -25,6 +25,7 @@ from .accountinfo import AccountInfo
 from .cache import Cache
 from .combinableinstructions import CombinableInstructions
 from .context import Context
+from .datasaver import DataSaverTypes
 from .group import GroupSlot, Group
 from .healthcheck import HealthCheck
 from .instructions import build_create_serum_open_orders_instructions
@@ -59,7 +60,8 @@ def build_group_watcher(context: Context, manager: WebSocketSubscriptionManager,
     manager.add(group_subscription)
     latest_group_observer = LatestItemObserverSubscriber[Group](group)
     group_subscription.publisher.subscribe(latest_group_observer)
-    health_check.add("group_subscription", group_subscription.publisher)
+    # CHKP TODO - health_check should reconnect, but does not.  Investigate!
+    # health_check.add("group_subscription", group_subscription.publisher)
     return latest_group_observer
 
 
@@ -163,7 +165,17 @@ def build_price_watcher(context: Context, manager: WebSocketSubscriptionManager,
     latest_price_observer = LatestItemObserverSubscriber(initial_price)
     price_disposable = price_feed.subscribe(latest_price_observer)
     disposer.add_disposable(price_disposable)
+
+    # CHKP addition
+    if context.cfg.data_saver is not None:
+        data_price_observer = context.cfg.data_saver.get_observer(DataSaverTypes.Price)
+        price_feed.subscribe(data_price_observer)
+        disposer.add_disposable(data_price_observer)
+
+    # CHKP addition
     health_check.add("price_subscription", price_feed)
+    symbol_code = market.symbol.replace('/', '').lower()
+    health_check.add(f"price_subscription_{provider_name}_{symbol_code}", price_feed)
     return latest_price_observer
 
 
@@ -224,13 +236,14 @@ def build_orderbook_watcher(context: Context, manager: WebSocketSubscriptionMana
 
     def _update_bids(account_info: AccountInfo) -> OrderBook:
         new_bids = market.parse_account_info_to_orders(account_info)
-        updatable_orderbook.bids = new_bids
+        updatable_orderbook.update_bids(new_bids)
         return updatable_orderbook
 
     def _update_asks(account_info: AccountInfo) -> OrderBook:
         new_asks = market.parse_account_info_to_orders(account_info)
-        updatable_orderbook.asks = new_asks
+        updatable_orderbook.update_asks(new_asks)
         return updatable_orderbook
+
     bids_subscription = WebSocketAccountSubscription[OrderBook](context, orderbook_addresses[0], _update_bids)
     manager.add(bids_subscription)
     asks_subscription = WebSocketAccountSubscription[OrderBook](context, orderbook_addresses[1], _update_asks)
@@ -240,6 +253,12 @@ def build_orderbook_watcher(context: Context, manager: WebSocketSubscriptionMana
 
     bids_subscription.publisher.subscribe(orderbook_observer)
     asks_subscription.publisher.subscribe(orderbook_observer)
+
+    # CHKP addition
+    if context.cfg.data_saver is not None:
+        bids_subscription.publisher.subscribe(context.cfg.data_saver.get_observer(DataSaverTypes.OrderBook))
+        asks_subscription.publisher.subscribe(context.cfg.data_saver.get_observer(DataSaverTypes.OrderBook))
+
     health_check.add("orderbook_bids_subscription", bids_subscription.publisher)
     health_check.add("orderbook_asks_subscription", asks_subscription.publisher)
     return orderbook_observer

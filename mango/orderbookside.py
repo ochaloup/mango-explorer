@@ -135,6 +135,10 @@ class PerpOrderBookSide(AddressableAccount):
                     stack = [*stack, node.children[0], node.children[1]]
                 else:
                     stack = [*stack, node.children[1], node.children[0]]
+
+        if order_side == Side.BUY:
+            orders.reverse()
+
         return orders
 
     def __str__(self) -> str:

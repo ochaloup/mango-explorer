@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+
+import base58
+import os
+
+byte_array = base58.b58decode(os.environ.get('KEY'))
+json_string = "[" + ",".join(map(lambda b: str(b), byte_array)) + "]"
+
+print(json_string)

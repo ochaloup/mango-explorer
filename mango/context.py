@@ -30,6 +30,7 @@ from .instructionreporter import InstructionReporter, CompoundInstructionReporte
 from .instrumentlookup import InstrumentLookup
 from .marketlookup import MarketLookup
 from .text import indent_collection_as_str, indent_item_by
+from .chkpcontextconf import ChkpContextConfiguration
 
 
 # # 🥭 Context class
@@ -37,6 +38,9 @@ from .text import indent_collection_as_str, indent_item_by
 # A `Context` object to manage Solana connection and Mango configuration.
 #
 class Context:
+
+    cfg: ChkpContextConfiguration = None
+
     def __init__(self, name: str, cluster_name: str, cluster_urls: typing.Sequence[ClusterUrlData], skip_preflight: bool,
                  commitment: str, encoding: str, blockhash_cache_duration: int, http_request_timeout: float,
                  stale_data_pauses_before_retry: typing.Sequence[float], mango_program_address: PublicKey,

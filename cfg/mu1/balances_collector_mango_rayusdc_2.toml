@@ -1,0 +1,19 @@
+[config]
+
+base = "common.toml"
+
+[solana]
+
+address = "F4GJdmdUZHtBxMuXpLdC7g6bUiQ8XBK7tTBfJSvBjruo"
+key_file = "/srv/key/mango-explorer/mu1/F4GJdmdUZHtBxMuXpLdC7g6bUiQ8XBK7tTBfJSvBjruo.json"
+
+
+[paths]
+
+account_balances_heartbeat = "run/balances_collector_mango_rayusdc_2/heartbeat"
+
+[balance_collector]
+
+watch_markets = ["RAY/USDC"]
+watch_symbols = ["MSOL", "RAY", "USDC"]
+stale_data_pauses_before_retry = 2

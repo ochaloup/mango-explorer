@@ -16,10 +16,13 @@
 from .context import Context
 from .contextbuilder import ContextBuilder
 from .oracle import OracleProvider
-from .oracles.ftx import ftx
+from .oracles.ftx import ftx, ftx_mango
 from .oracles.market import market
 from .oracles.pythnetwork import pythnetwork
 from .oracles.stub import stub
+from .oracles.msol import MSolOracleProvider
+from .oracles.binance import binance
+from .oracles.kraken import kraken
 
 
 # # 🥭 Oracle Factory
@@ -28,8 +31,8 @@ from .oracles.stub import stub
 #
 def create_oracle_provider(context: Context, provider_name: str) -> OracleProvider:
     proper_provider_name: str = provider_name.upper()
-    if proper_provider_name == "FTX":
-        return ftx.FtxOracleProvider()
+    if proper_provider_name == "FTX_MANGO":
+        return ftx_mango.FtxOracleProvider()
     elif proper_provider_name == "MARKET":
         return market.MarketOracleProvider()
     elif proper_provider_name == "PYTH":
@@ -42,4 +45,12 @@ def create_oracle_provider(context: Context, provider_name: str) -> OracleProvid
         return pythnetwork.PythOracleProvider(devnet_pyth_context)
     elif proper_provider_name == "STUB":
         return stub.StubOracleProvider()
+    elif proper_provider_name == "FTX":
+        return ftx.FtxOracleProvider(context.cfg)
+    elif proper_provider_name == "MSOL":
+        return MSolOracleProvider(context.cfg)
+    elif proper_provider_name == "BINANCE":
+        return binance.BinanceOracleProvider(context.cfg)
+    elif proper_provider_name == "KRAKEN":
+        return kraken.KrakenOracleProvider(context.cfg)
     raise Exception(f"Unknown oracle provider '{proper_provider_name}'.")

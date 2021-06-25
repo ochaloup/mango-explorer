@@ -1,10 +1,10 @@
 # # ⚠ Warning
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
-# LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-# NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+# BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
+# AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 # [🥭 Mango Markets](https://markets/) support is available at:
 #   [Docs](https://docs.markets/)
@@ -14,39 +14,96 @@
 #   [Email](mailto:hello@blockworks.foundation)
 
 
+import json
+import logging
 import requests
+from requests.exceptions import ConnectionError
 import re
 import rx
+import rx.operators as rxop
 import typing
-import websocket
 
 from datetime import datetime
 from decimal import Decimal
-from rx.subject.subject import Subject
+from rx.subject import Subject
+from rx.core import Observable
+import cachetools.func
+
+from mango import observable_pipeline_error_reporter
 
 from ...context import Context
 from ...market import Market
 from ...observables import DisposePropagator, DisposeWrapper
 from ...oracle import Oracle, OracleProvider, OracleSource, Price, SupportedOracleFeature
 from ...reconnectingwebsocket import ReconnectingWebsocket
+from mango.chkpcontextconf import ChkpContextConfiguration
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 # # 🥭 FTX
 #
 # This file contains code specific to the [Ftx Network](https://ftx.com/).
 #
-def _ftx_get_from_url(url: str) -> typing.Any:
+
+def _ftx_get_all_from_url(url: str) -> typing.Dict:
+
+    try:
+        response = requests.get(url)
+        response_values = response.json()
+
+    except ConnectionError:
+        LOGGER.info(f'Failed getting ftx data with {url}, ConnectionError.')
+        return {}
+    except json.decoder.JSONDecodeError:
+        LOGGER.info(f'Failed getting ftx data with {url}, JSONDecodeError.')
+        return {}
+
+    return response_values
+
+
+@cachetools.func.ttl_cache(maxsize=128, ttl=1)
+def _ftx_get_all_from_url_cached(url: str) -> typing.Dict:
+    return _ftx_get_all_from_url(url)
+
+
+def _ftx_get_from_url(symbol: str) -> typing.Dict:
+    # specific symbol can be also queried with "https://ftx.com/api/markets/{symbol}"
+    source_uncached_url = "https://ftx.com/api/markets"
+
+    LOGGER.info('Using globally uncached (locally cached) url to query ftx prices.')
+    all_response_values = _ftx_get_all_from_url_cached(source_uncached_url)
+
+    if ("success" not in all_response_values) or (not all_response_values["success"]):
+        raise Exception(f"Failed to get from FTX URL: {source_uncached_url}/{symbol}")
+
+    response_values = [r for r in all_response_values['result'] if r['name'] == symbol.upper()]
+
+    if not response_values:
+        raise Exception(
+            f"Failed to get symbol {symbol} from FTX URL:"
+            f" {source_uncached_url}/{symbol} - {response_values}"
+        )
+    return response_values[0]
+
+
+# # mSOL
+
+MSOL_SYMBOLS = {'MSOL/USDC', 'MSOL/RAY'}
+MSOL_INVERSE_SYMBOLS = {'ORCA/MSOL'}
+
+
+def _get_msol_price_in_sol(url: str) -> Decimal:
     response = requests.get(url)
-    response_values = response.json()
-    if ("success" not in response_values) or (not response_values["success"]):
-        raise Exception(f"Failed to get from FTX URL: {url} - {response_values}")
-    return response_values["result"]
+    return Decimal(response.text)
 
 
 # # 🥭 FtxOracleConfidence constant
 #
 # FTX doesn't provide a confidence value.
 #
+
 FtxOracleConfidence: Decimal = Decimal(0)
 
 
@@ -54,44 +111,97 @@ FtxOracleConfidence: Decimal = Decimal(0)
 #
 # Implements the `Oracle` abstract base class specialised to the Ftx Network.
 #
+
 class FtxOracle(Oracle):
-    def __init__(self, market: Market, ftx_symbol: str) -> None:
+    def __init__(self, market: Market, ftx_symbol: str, cfg: ChkpContextConfiguration):
         name = f"Ftx Oracle for {market.symbol} / {ftx_symbol}"
         super().__init__(name, market)
         self.market: Market = market
         self.ftx_symbol: str = ftx_symbol
-        features: SupportedOracleFeature = SupportedOracleFeature.MID_PRICE | SupportedOracleFeature.TOP_BID_AND_OFFER
+        self.cfg: ChkpContextConfiguration = cfg
+        features: SupportedOracleFeature\
+            = SupportedOracleFeature.MID_PRICE | SupportedOracleFeature.TOP_BID_AND_OFFER
         self.source: OracleSource = OracleSource("FTX", name, features, market)
 
+    def _fetch_price(self, context: Context, symbol) -> typing.Tuple[Decimal, Decimal, Decimal]:
+
+        result = _ftx_get_from_url(symbol)
+
+        if self.market.symbol in MSOL_SYMBOLS:
+            factor = _get_msol_price_in_sol(self.cfg.marinade_api_url)
+        elif self.market.symbol in MSOL_INVERSE_SYMBOLS:
+            factor = 1 / _get_msol_price_in_sol(self.cfg.marinade_api_url)
+        else:
+            factor = 1
+
+        bid = Decimal(result["bid"]) * factor
+        mid = Decimal(result["price"]) * factor
+        ask = Decimal(result["ask"]) * factor
+
+        return bid, mid, ask
+
     def fetch_price(self, context: Context) -> Price:
-        result = _ftx_get_from_url(f"https://ftx.com/api/markets/{self.ftx_symbol}")
-        bid = Decimal(result["bid"])
-        ask = Decimal(result["ask"])
-        price = Decimal(result["price"])
 
-        return Price(self.source, datetime.now(), self.market, bid, price, ask, FtxOracleConfidence)
+        if '//' not in self.ftx_symbol:
+            bid, mid, ask = self._fetch_price(context, self.ftx_symbol)
 
-    def to_streaming_observable(self, _: Context) -> rx.core.typing.Observable[Price]:
+        else:
+            symbol_num, symbol_den = self.ftx_symbol.split('//')
+            bid_num, mid_num, ask_num = self._fetch_price(context, symbol_num)
+            bid_den, mid_den, ask_den = self._fetch_price(context, symbol_den)
+
+            bid = bid_num / ask_den
+            mid = mid_num / mid_den
+            ask = ask_num / bid_den
+
+        return Price(
+            self.source, datetime.now(), self.market,
+            bid, mid, ask,
+            FtxOracleConfidence
+        )
+
+    def to_streaming_observable(self, context: Context) -> rx.core.Observable:
         subject = Subject()
 
-        def _on_item(data: typing.Dict[str, typing.Any]) -> None:
+        def _on_item(data):
             if data["type"] == "update":
                 bid = Decimal(data["data"]["bid"])
                 ask = Decimal(data["data"]["ask"])
                 mid = (bid + ask) / Decimal(2)
                 time = data["data"]["time"]
                 timestamp = datetime.fromtimestamp(time)
-                price = Price(self.source, timestamp, self.market, bid, mid, ask, FtxOracleConfidence)
+                price = Price(
+                    self.source,
+                    timestamp,
+                    self.market,
+                    bid,
+                    mid,
+                    ask,
+                    FtxOracleConfidence
+                )
                 subject.on_next(price)
 
-        def on_open(sock: websocket.WebSocketApp) -> None:
-            sock.send(f"""{{"op": "subscribe", "channel": "ticker", "market": "{self.ftx_symbol}"}}""")
+                # self._check_quality_of_price_update(price, context)
 
-        ws: ReconnectingWebsocket = ReconnectingWebsocket("wss://ftx.com/ws/", on_open)
-        ws.item.subscribe(on_next=_on_item)  # type: ignore[call-arg]
+        ws: ReconnectingWebsocket = ReconnectingWebsocket(
+            "wss://ftx.com/ws/",
+            lambda ws: ws.send(
+                f"""{{"op": "subscribe", "channel": "ticker", "market":
+                "{self.ftx_symbol}"}}"""
+            )
+        )
+        ws.item.subscribe(on_next=_on_item)
 
-        def subscribe(observer: rx.core.typing.Observer[Price], scheduler_: typing.Optional[rx.core.typing.Scheduler] = None) -> rx.core.typing.Disposable:
-            subject.subscribe(observer, scheduler=scheduler_)  # type: ignore
+        if context.cfg.reconnect_interval > 0:
+            rx.interval(context.cfg.reconnect_interval).pipe(
+                rxop.observe_on(context.create_thread_pool_scheduler()),
+                rxop.do_action(lambda x: ws.force_reconnect()),
+                rxop.catch(observable_pipeline_error_reporter),
+                rxop.retry()
+            ).subscribe()
+
+        def subscribe(observer, scheduler_=None):
+            subject.subscribe(observer, scheduler_)
 
             disposable = DisposePropagator()
             disposable.add_disposable(DisposeWrapper(lambda: ws.close()))
@@ -99,7 +209,7 @@ class FtxOracle(Oracle):
 
             return disposable
 
-        price_observable = rx.core.observable.observable.Observable(subscribe)
+        price_observable = Observable(subscribe)
 
         ws.open()
 
@@ -112,12 +222,13 @@ class FtxOracle(Oracle):
 #
 
 class FtxOracleProvider(OracleProvider):
-    def __init__(self) -> None:
+    def __init__(self, cfg: ChkpContextConfiguration) -> None:
         super().__init__("Ftx Oracle Factory")
+        self.cfg: ChkpContextConfiguration = cfg
 
     def oracle_for_market(self, context: Context, market: Market) -> typing.Optional[Oracle]:
         symbol = self._market_symbol_to_ftx_symbol(market.symbol)
-        return FtxOracle(market, symbol)
+        return FtxOracle(market, symbol, self.cfg)
 
     def all_available_symbols(self, context: Context) -> typing.Sequence[str]:
         result = _ftx_get_from_url("https://ftx.com/api/markets")
@@ -132,4 +243,15 @@ class FtxOracleProvider(OracleProvider):
 
     def _market_symbol_to_ftx_symbol(self, symbol: str) -> str:
         normalised = symbol.upper()
-        return re.sub("USDC$", "USD", normalised)
+        fixed_usdc = re.sub("USDC$", "USD", normalised)
+        fixed_perp = re.sub("\\-PERP$", "/USD", fixed_usdc)
+
+        if normalised == 'MSOL/USDC':
+            return 'SOL/USD'
+
+        if normalised.endswith('/SOL') or normalised.endswith('/USDT'):
+            first, second = normalised.split('/')
+            return f'{first}/USD//{second}/USD'
+
+        else:
+            return fixed_perp

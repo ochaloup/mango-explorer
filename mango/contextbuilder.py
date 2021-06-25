@@ -105,7 +105,6 @@ class ContextBuilder:
                             help="Maximum number of addresses to send in a single call to getMultipleAccounts()")
         parser.add_argument("--gma-chunk-pause", type=Decimal, default=None,
                             help="number of seconds to pause between successive getMultipleAccounts() calls to avoid rate limiting")
-
         parser.add_argument("--token-data-file", type=str, default=SPLTokenLookup.DefaultDataFilepath,
                             help="data file that contains token symbols, names, mints and decimals (format is same as https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json)")
 

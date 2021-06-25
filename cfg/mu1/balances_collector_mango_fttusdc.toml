@@ -1,0 +1,17 @@
+[config]
+
+base = "common.toml"
+
+[solana]
+
+address = "Hquj2QqZAcMDwYYTuhFW1WY4a48zi7MvGc7bJ8FvZMAU"
+key_file = "/srv/key/mango-explorer/mu1/Hquj2QqZAcMDwYYTuhFW1WY4a48zi7MvGc7bJ8FvZMAU.json"
+
+[paths]
+
+account_balances_heartbeat = "run/balances_collector_mango_fttusdc/heartbeat"
+
+[balance_collector]
+
+watch_markets = ["FTT/USDC"]
+stale_data_pauses_before_retry = 2

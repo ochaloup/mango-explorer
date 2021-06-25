@@ -36,8 +36,10 @@ class Chain:
         self.elements: typing.Sequence[Element] = elements
 
     def process(self, context: mango.Context, model_state: ModelState) -> typing.Sequence[mango.Order]:
+        self._logger.info('Started processing chain elements')
         orders: typing.Sequence[mango.Order] = []
         for element in self.elements:
+            self._logger.info(f'Processing {element} {type(element)}')
             orders = element.process(context, model_state, orders)
         return orders
 
@@ -45,8 +47,6 @@ class Chain:
         return f"{self}"
 
     def __str__(self) -> str:
-        elements = "\n    ".join(map(str, self.elements)) or "None"
+        elements = ", ".join(map(str, self.elements)) or "None"
 
-        return f"""« Chain of {len(self.elements)} elements:
-    {elements}
-»"""
+        return f"""« Chain of {len(self.elements)} elements: {elements}»"""

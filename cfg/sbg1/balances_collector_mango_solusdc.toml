@@ -1,0 +1,19 @@
+[config]
+
+base = "common.toml"
+
+[solana]
+
+cluster_url = "https://6b45a2f5-6b33-4c12-ad6e-d6b79a584698.solana.bison.run/rpc"
+address = "DXduaJGTVVZLeTy75wDu3CkbEzsA3jFBaTHRvF4UoTyz"
+key_file = "/srv/key/mango-explorer/sbg1/DXduaJGTVVZLeTy75wDu3CkbEzsA3jFBaTHRvF4UoTyz.json"
+
+
+[paths]
+
+account_balances_heartbeat = "run/balances_collector_mango_solusdc/heartbeat"
+
+[balance_collector]
+
+watch_markets = ["SOL/USDC"]
+stale_data_pauses_before_retry = 2

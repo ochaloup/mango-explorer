@@ -1,0 +1,16 @@
+[config]
+
+base = "common.toml"
+
+[solana]
+
+address = "7nmgeDXsyJLB9Re9bM2z7n5RsYhxgeoWUWes8yJAtZja"
+key_file = "/srv/key/mango-explorer/mu1/7nmgeDXsyJLB9Re9bM2z7n5RsYhxgeoWUWes8yJAtZja.json"
+
+[paths]
+
+account_balances_heartbeat = "run/balances_collector_serum_raysol/heartbeat"
+
+[balance_collector]
+
+stale_data_pauses_before_retry = 2

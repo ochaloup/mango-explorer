@@ -87,24 +87,49 @@ class PollingModelStateBuilder(ModelStateBuilder):
         raise NotImplementedError("PollingModelStateBuilder.poll() is not implemented on the base type.")
 
     def from_values(self, order_owner: PublicKey, market: mango.Market, group: mango.Group, account: mango.Account,
-                    price: mango.Price, placed_orders_container: mango.PlacedOrdersContainer,
+                    # CHKP addintion, TODO bids and asks were replaced by placed_orders_containers - should not be needed
+                    prices: typing.Dict[str, mango.Price],
+                    placed_orders_container: mango.PlacedOrdersContainer,
                     inventory: mango.Inventory, orderbook: mango.OrderBook, event_queue: mango.EventQueue) -> ModelState:
         group_watcher: mango.ManualUpdateWatcher[mango.Group] = mango.ManualUpdateWatcher(group)
         account_watcher: mango.ManualUpdateWatcher[mango.Account] = mango.ManualUpdateWatcher(account)
-        price_watcher: mango.ManualUpdateWatcher[mango.Price] = mango.ManualUpdateWatcher(price)
+        # CHKP addition
+        # price_watcher: mango.ManualUpdateWatcher[mango.Price] = mango.ManualUpdateWatcher(price)
+        price_watchers: typing.Dict[str, mango.ManualUpdateWatcher[mango.Price]] = {
+            exchange_name: mango.ManualUpdateWatcher(price)
+            for exchange_name, price in prices.items()
+        }
+
         placed_orders_container_watcher: mango.ManualUpdateWatcher[
             mango.PlacedOrdersContainer] = mango.ManualUpdateWatcher(placed_orders_container)
         inventory_watcher: mango.ManualUpdateWatcher[mango.Inventory] = mango.ManualUpdateWatcher(inventory)
         orderbook_watcher: mango.ManualUpdateWatcher[mango.OrderBook] = mango.ManualUpdateWatcher(orderbook)
         event_queue_watcher: mango.ManualUpdateWatcher[mango.EventQueue] = mango.ManualUpdateWatcher(event_queue)
 
-        return ModelState(order_owner, market, group_watcher, account_watcher, price_watcher,
+        return ModelState(order_owner, market, group_watcher, account_watcher, price_watchers,
                           placed_orders_container_watcher, inventory_watcher, orderbook_watcher,
                           event_queue_watcher)
 
+    # CHKP addition
+    def fetch_prices(self, context: mango.Context, oracles: typing.Dict[str, mango.Oracle]) -> typing.Dict[str, mango.Price]:
+        prices: typing.Dict[str, mango.Price] = {
+            exchange_name: oracle.fetch_price(context)
+            for exchange_name, oracle in oracles.items()
+        }
+        return prices
+
+    # CHKP TODO: absolutely naive
+    def calculate_mid_price(self, prices: typing.Dict[str, mango.Price]) -> Decimal:
+        mid_price = -1
+        for price in prices.values():
+            mid_price += price.mid_price
+        if mid_price < 0:
+            raise Exception("No  mid_price defined in price oracles. Who knows what to do!")
+        mid_price = mid_price / len(prices)
+        return mid_price
+
     def __str__(self) -> str:
         return "« PollingModelStateBuilder »"
-
 
 # # 🥭 SerumPollingModelStateBuilder class
 #
@@ -114,7 +139,7 @@ class SerumPollingModelStateBuilder(PollingModelStateBuilder):
     def __init__(self,
                  order_owner: PublicKey,
                  market: mango.SerumMarket,
-                 oracle: mango.Oracle,
+                 oracles: typing.Dict[str, mango.Oracle],
                  group_address: PublicKey,
                  cache_address: PublicKey,
                  account_address: PublicKey,
@@ -125,7 +150,8 @@ class SerumPollingModelStateBuilder(PollingModelStateBuilder):
         super().__init__()
         self.order_owner: PublicKey = order_owner
         self.market: mango.SerumMarket = market
-        self.oracle: mango.Oracle = oracle
+        # CHKP change
+        self.oracles: typing.Dict[str, mango.Oracle] = oracles
 
         self.group_address: PublicKey = group_address
         self.cache_address: PublicKey = cache_address
@@ -142,7 +168,7 @@ class SerumPollingModelStateBuilder(PollingModelStateBuilder):
         addresses: typing.List[PublicKey] = [
             self.group_address,
             self.cache_address,
-            self.account_address,
+            self.account_address, # CHKP TODO removed this, why could not be left. Serum market does not have a Mango account but for purposes of the code likeness this could be left here?
             self.open_orders_address,
             self.base_inventory_token_account.address,
             self.quote_inventory_token_account.address,
@@ -167,9 +193,12 @@ class SerumPollingModelStateBuilder(PollingModelStateBuilder):
 
         event_queue: mango.EventQueue = mango.SerumEventQueue.parse(account_infos[8])
 
-        price: mango.Price = self.oracle.fetch_price(context)
+        # CHKP addition
+        # price: mango.Price = self.oracle.fetch_price(context)  # CHKP removal
+        prices: typing.Dict[str, mango.Price] = self.fetch_prices(context, self.oracles)
+        calculated_mid_price = self.calculate_mid_price(prices)
 
-        available: Decimal = (base_inventory_token_account.value.value * price.mid_price) + \
+        available: Decimal = (base_inventory_token_account.value.value * calculated_mid_price) + \
             quote_inventory_token_account.value.value
         available_collateral: InstrumentValue = InstrumentValue(quote_inventory_token_account.value.token, available)
         inventory: mango.Inventory = mango.Inventory(mango.InventorySource.SPL_TOKENS,
@@ -178,7 +207,7 @@ class SerumPollingModelStateBuilder(PollingModelStateBuilder):
                                                      base_inventory_token_account.value,
                                                      quote_inventory_token_account.value)
 
-        return self.from_values(self.order_owner, self.market, group, account, price, placed_orders_container, inventory, orderbook, event_queue)
+        return self.from_values(self.order_owner, self.market, group, account, prices, placed_orders_container, inventory, orderbook, event_queue)
 
     def __str__(self) -> str:
         return f"""« SerumPollingModelStateBuilder for market '{self.market.symbol}' »"""
@@ -192,7 +221,7 @@ class SpotPollingModelStateBuilder(PollingModelStateBuilder):
     def __init__(self,
                  order_owner: PublicKey,
                  market: mango.SpotMarket,
-                 oracle: mango.Oracle,
+                 oracles: typing.Dict[str, mango.Oracle],
                  group_address: PublicKey,
                  cache_address: PublicKey,
                  account_address: PublicKey,
@@ -202,7 +231,8 @@ class SpotPollingModelStateBuilder(PollingModelStateBuilder):
         super().__init__()
         self.order_owner: PublicKey = order_owner
         self.market: mango.SpotMarket = market
-        self.oracle: mango.Oracle = oracle
+        # CHKP addition
+        self.oracles: typing.Dict[str, mango.Oracle] = oracles
 
         self.group_address: PublicKey = group_address
         self.cache_address: PublicKey = cache_address
@@ -213,6 +243,8 @@ class SpotPollingModelStateBuilder(PollingModelStateBuilder):
         self.collateral_calculator: CollateralCalculator = SpotCollateralCalculator()
 
     def poll(self, context: mango.Context) -> ModelState:
+        time_poll_start = time.time()
+
         addresses: typing.List[PublicKey] = [
             self.group_address,
             self.cache_address,
@@ -264,9 +296,12 @@ class SpotPollingModelStateBuilder(PollingModelStateBuilder):
 
         event_queue: mango.EventQueue = mango.SerumEventQueue.parse(account_infos[5])
 
-        price: mango.Price = self.oracle.fetch_price(context)
 
-        return self.from_values(self.order_owner, self.market, group, account, price, placed_orders_container, inventory, orderbook, event_queue)
+        # CHKP addition
+        # price: mango.Price = self.oracle.fetch_price(context)  # CHKP removal
+        prices = self.fetch_prices(context, self.oracles)
+
+        return self.from_values(self.order_owner, self.market, group, account, prices, placed_orders_container, inventory, orderbook, event_queue)
 
     def __str__(self) -> str:
         return f"""« SpotPollingModelStateBuilder for market '{self.market.symbol}' »"""
@@ -280,14 +315,14 @@ class PerpPollingModelStateBuilder(PollingModelStateBuilder):
     def __init__(self,
                  order_owner: PublicKey,
                  market: mango.PerpMarket,
-                 oracle: mango.Oracle,
+                 oracles: typing.Dict[str, mango.Oracle],
                  group_address: PublicKey,
                  cache_address: PublicKey
                  ) -> None:
         super().__init__()
         self.order_owner: PublicKey = order_owner
         self.market: mango.PerpMarket = market
-        self.oracle: mango.Oracle = oracle
+        self.oracles: typing.Dict[str, mango.Oracle] = oracles
 
         self.group_address: PublicKey = group_address
         self.cache_address: PublicKey = cache_address
@@ -329,9 +364,11 @@ class PerpPollingModelStateBuilder(PollingModelStateBuilder):
 
         event_queue: mango.EventQueue = mango.PerpEventQueue.parse(account_infos[5], self.market.lot_size_converter)
 
-        price: mango.Price = self.oracle.fetch_price(context)
+        # CHKP addition
+        # price: mango.Price = self.oracle.fetch_price(context)  # CHKP removal
+        prices = self.fetch_prices(context, self.oracles)
 
-        return self.from_values(self.order_owner, self.market, group, account, price, placed_orders_container, inventory, orderbook, event_queue)
+        return self.from_values(self.order_owner, self.market, group, account, prices, placed_orders_container, inventory, orderbook, event_queue)
 
     def __str__(self) -> str:
         return f"""« PerpPollingModelStateBuilder for market '{self.market.symbol}' »"""

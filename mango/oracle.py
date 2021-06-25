@@ -19,7 +19,8 @@ import logging
 import rx
 import typing
 
-from datetime import datetime
+from time import time_ns
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from .context import Context
@@ -72,6 +73,7 @@ class Price():
     def __init__(self, source: OracleSource, timestamp: datetime, market: Market, top_bid: Decimal, mid_price: Decimal, top_ask: Decimal, confidence: Decimal) -> None:
         self.source: OracleSource = source
         self.timestamp: datetime = timestamp
+        self.chainkeepers_timestamp = time_ns()  # CHKP addition
         self.market: Market = market
         self.top_bid: Decimal = top_bid
         self.mid_price: Decimal = mid_price
@@ -91,6 +93,18 @@ class Price():
     def __repr__(self) -> str:
         return f"{self}"
 
+    def __dict__(self) -> typing.Dict[str, str]:
+        return {
+            'source': str(self.source),
+            'timestamp': str(self.timestamp),
+            'chainkeepers_timestamp': str(self.chainkeepers_timestamp),
+            'market': str(self.market),
+            'top_bid': str(self.top_bid),
+            'mid_price': str(self.mid_price),
+            'top_ask': str(self.top_ask),
+            'confidence': str(self.confidence),
+        }
+
 
 # # 🥭 Oracle class
 #
@@ -101,6 +115,8 @@ class Oracle(metaclass=abc.ABCMeta):
         self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
         self.name = name
         self.market = market
+
+        self._latest_wss_data_timestamp = datetime.now()
 
     @property
     def symbol(self) -> str:
@@ -116,6 +132,38 @@ class Oracle(metaclass=abc.ABCMeta):
 
     def __str__(self) -> str:
         return f"« Oracle {self.name} [{self.market.symbol}] »"
+
+    # CHKP addition
+    def _check_quality_of_price_update(self, price: Price, context: Context) -> None:
+        # validate wss mid price against http api
+        # do this every few seconds
+        # also check that the updates are not too sparse
+        time_since_latest_check = datetime.now() - self._latest_wss_data_timestamp
+        if time_since_latest_check > timedelta(seconds=20):
+            self._latest_wss_data_timestamp = datetime.now()
+
+            http_price = self.fetch_price(context).mid_price
+            diff = (price.mid_price - http_price) / http_price
+            extra = dict(
+                http_price=http_price,
+                wss_price=price.mid_price,
+                relative_diff=diff,
+                time_since_latest_check=time_since_latest_check
+            )
+            if time_since_latest_check > timedelta(seconds=60):
+                self._logger.warning(
+                    f'Price updates are too sparse. {extra}',
+                    extra=dict(time_since_latest_check=time_since_latest_check)
+                )
+            if Decimal('-0.003') < diff < Decimal('0.003'):
+                self._logger.info(
+                    f'Price from wss and http are similar: {diff}, {extra}',
+                    extra=extra
+                )
+            else:
+                self._logger.warning(
+                    f'Price from wss and http deviate too much: {diff}, {extra}', extra=extra
+                )
 
     def __repr__(self) -> str:
         return f"{self}"
@@ -142,3 +190,27 @@ class OracleProvider(metaclass=abc.ABCMeta):
 
     def __repr__(self) -> str:
         return f"{self}"
+
+
+# CHKP addition
+# # 🥭 AsyncOracle class
+#
+# Derived versions of this class can fetch prices for a specific market.
+#
+class AsyncOracle(metaclass=abc.ABCMeta):
+    def __init__(self, name: str, market: Market) -> None:
+        self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
+        self.name = name
+        self.market = market
+
+    @property
+    def symbol(self) -> str:
+        return self.market.symbol
+
+    @abc.abstractmethod
+    async def fetch_price(self, context: Context) -> Price:
+        raise NotImplementedError("Oracle.fetch_price() is not implemented on the base type.")
+
+    @abc.abstractmethod
+    async def to_streaming_observable(self, context: Context) -> rx.core.Observable:
+        raise NotImplementedError("Oracle.fetch_price() is not implemented on the base type.")

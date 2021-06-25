@@ -50,7 +50,11 @@ class FixedSpreadElement(PairwiseElement):
         # If no spread is explicitly specified for this element, just use the last specified spread.
         spread: Decimal = self.spreads[index] if index < len(self.spreads) else self.spreads[-1]
         half_spread: Decimal = spread / 2
-        price: mango.Price = model_state.price
+
+        if len(model_state.prices) > 1:  # CHKP change
+            raise NotImplementedError("This is a Chainkeepers change which was not adapted to work with ratioselement.py")
+        price: mango.Price = list(model_state.prices.values())[0]
+
         new_buy: typing.Optional[mango.Order] = None
         new_sell: typing.Optional[mango.Order] = None
         if buy is not None:

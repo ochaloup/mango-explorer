@@ -14,11 +14,12 @@
 #   [Email](mailto:hello@blockworks.foundation)
 
 
-import mango
 import typing
+import time
 
 from decimal import Decimal
 
+import mango
 from ..modelstate import ModelState
 from .orderreconciler import OrderReconciler
 from .reconciledorders import ReconciledOrders
@@ -41,10 +42,18 @@ from .reconciledorders import ReconciledOrders
 # * ModelState is ignored when matching.
 #
 class ToleranceOrderReconciler(OrderReconciler):
-    def __init__(self, price_tolerance: Decimal, quantity_tolerance: Decimal) -> None:
+    def __init__(self, price_tolerance: Decimal, quantity_tolerance: Decimal, ioc_order_wait_seconds: Decimal = Decimal(0)) -> None:
         super().__init__()
         self.price_tolerance: Decimal = price_tolerance
         self.quantity_tolerance: Decimal = quantity_tolerance
+        self.ioc_order_wait_seconds: Decimal = ioc_order_wait_seconds
+
+        # These are initialized with time already so that we can mitigate potential errors/bugs
+        # with model initialization with market data.
+        self.latest_taker_order_timestamps: typing.Dict[mango.Side, float] = {
+            mango.Side.BUY: time.time(),
+            mango.Side.SELL: time.time()
+        }
 
     @staticmethod
     def zero_tolerance_order_reconciler() -> "ToleranceOrderReconciler":
@@ -54,6 +63,14 @@ class ToleranceOrderReconciler(OrderReconciler):
         remaining_existing_orders: typing.List[mango.Order] = list(existing_orders)
         outcomes: ReconciledOrders = ReconciledOrders()
         for desired in desired_orders:
+            if desired.order_type == mango.OrderType.IOC:
+                # No need to look for acceptable order in case of IOC.
+                latest_timestamp = self.latest_taker_order_timestamps[desired.side]
+                current_timestamp = time.time()
+                if current_timestamp - latest_timestamp > self.ioc_order_wait_seconds:
+                    outcomes.to_place.append(desired)
+                    self.latest_taker_order_timestamps[desired.side] = current_timestamp
+
             acceptable = self.find_acceptable_order(desired, remaining_existing_orders)
             if acceptable is None:
                 outcomes.to_place += [desired]

@@ -1,0 +1,18 @@
+[config]
+
+base = "common.toml"
+
+[solana]
+
+address = "9pWVzCbuM1EnVRDqjUUWjEL3bV6qWLSxDfx7FtQNwUyL"
+key_file = "/srv/key/mango-explorer/mu1/9pWVzCbuM1EnVRDqjUUWjEL3bV6qWLSxDfx7FtQNwUyL.json"
+
+
+[paths]
+
+account_balances_heartbeat = "run/balances_collector_mango_solperp/heartbeat"
+
+[balance_collector]
+
+watch_markets = ["SOL-PERP"]
+stale_data_pauses_before_retry = 2

@@ -1,0 +1,7 @@
+[config]
+
+base = "common.toml"
+
+[solana]
+
+address = "DXduaJGTVVZLeTy75wDu3CkbEzsA3jFBaTHRvF4UoTyz"

@@ -28,6 +28,7 @@ from .oracle import Price
 from .orders import Order, OrderBook
 from .placedorder import PlacedOrdersContainer
 from .watcher import Watcher
+from .modelstatevalues import ModelStateValues
 
 
 # # 🥭 EventQueue protocol
@@ -59,7 +60,7 @@ class ModelState:
                  market: Market,
                  group_watcher: Watcher[Group],
                  account_watcher: Watcher[Account],
-                 price_watcher: Watcher[Price],
+                 price_watchers: typing.Dict[str, Watcher[Price]],
                  placed_orders_container_watcher: Watcher[PlacedOrdersContainer],
                  inventory_watcher: Watcher[Inventory],
                  orderbook: Watcher[OrderBook],
@@ -70,7 +71,7 @@ class ModelState:
         self.market: Market = market
         self.group_watcher: Watcher[Group] = group_watcher
         self.account_watcher: Watcher[Account] = account_watcher
-        self.price_watcher: Watcher[Price] = price_watcher
+        self.price_watchers: typing.Dict[str, Watcher[Price]] = price_watchers
         self.placed_orders_container_watcher: Watcher[
             PlacedOrdersContainer] = placed_orders_container_watcher
         self.inventory_watcher: Watcher[Inventory] = inventory_watcher
@@ -79,6 +80,7 @@ class ModelState:
 
         self.not_quoting: bool = False
         self.state: typing.Dict[str, typing.Any] = {}
+        self.values = ModelStateValues()
 
     @property
     def group(self) -> Group:
@@ -88,9 +90,17 @@ class ModelState:
     def account(self) -> Account:
         return self.account_watcher.latest
 
+    # CHKP addition
+    @property
+    def prices(self) -> typing.Dict[str, Price]:
+        return {
+            exchange_name: price_watcher.latest
+            for exchange_name, price_watcher in self.price_watchers.items()
+        }
+
     @property
     def price(self) -> Price:
-        return self.price_watcher.latest
+        raise NotImplementedError('Use property method prices()')
 
     @property
     def placed_orders_container(self) -> PlacedOrdersContainer:
@@ -136,10 +146,14 @@ class ModelState:
         return list([o for o in all_orders if o.owner == self.order_owner])
 
     def __str__(self) -> str:
+        prices = {
+            exchange_name: price_watcher.latest
+            for exchange_name, price_watcher in self.price_watchers.items()
+        }
         return f"""« ModelState for market '{self.market.symbol}'
     Group: {self.group_watcher.latest.address}
     Account: {self.account_watcher.latest.address}
-    Price: {self.price_watcher.latest}
+    Price: {prices}
     Inventory: {self.inventory_watcher.latest}
     Existing Order Count: {len(self.placed_orders_container_watcher.latest.placed_orders)}
     Bid Count: {len(self.bids)}

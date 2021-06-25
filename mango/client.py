@@ -20,7 +20,6 @@ import requests
 import time
 import typing
 
-
 from base64 import b64decode
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -831,3 +830,8 @@ class BetterClient:
 
     def __repr__(self) -> str:
         return f"{self}"
+
+    # CHKP additions
+    def get_block_height(self):
+        response = self.compatible_client._send_request("getBlockHeight")
+        return response["result"]

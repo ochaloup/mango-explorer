@@ -1,0 +1,20 @@
+[database]
+
+prefix = "solana_trader_"
+instance_prefix = "mu1_"
+dashboard_url = "postgresql://aave2-sensor:8823rfjadfbl$%$$avsdkoo1@localhost:5432/dashboard"
+
+[solana]
+
+cluster_url = "https://6b45a2f5-6b33-4c12-ad6e-d6b79a584698.solana.bison.run/rpc"
+# marinade original API url https://api.marinade.finance/msol/price_sol, it's cached at production servers
+marinade_api_url = "http://localhost:8081/msol/price_sol"
+key_file = "/srv/key/mango-explorer/mu1.json"
+
+[paths]
+
+# paths are automatically prefixed by PREFIX environment variable
+# or /srv if undefined
+
+tmpdir = "data/tmp"  # to be changed
+datadir = "data/solana"

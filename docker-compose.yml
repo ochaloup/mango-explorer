@@ -1,0 +1,79 @@
+version: "3.6"
+services:
+  marinade-anchor:
+    build: {context: ../marinade-anchor, target: builder}
+    container_name: marinade-anchor-builder
+  shell:
+    build: {context: ., target: standard}
+    network_mode: host
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    depends_on:
+      - database
+    volumes:
+      - ./devel-keys:/srv/key
+  mango-price-collector-msolsol:
+    build: {context: ., target: devel}
+    network_mode: host
+    user: 1105:1105
+    volumes:
+      - ./data-msolsol:/srv/data
+    entrypoint: python3 -m mango.collector.price_collector cfg/mu1/serum_msolsol.toml
+
+  mango-price-collector-msolusdc:
+    build: {context: ., target: devel}
+    network_mode: host
+    user: 1105:1105
+    volumes:
+      - ./data-msolusdc:/srv/data
+    entrypoint: python3 -m mango.collector.price_collector cfg/mu1/serum_msolusdc.toml
+
+  pytest:
+    build: {context: ., target: devel}
+    command: pytest
+  pre-commit:
+    build: {context: ., target: pre-commit}
+    volumes:
+      - pre-commit-cache:/root/.cache/pre-commit/
+    entrypoint: env PRE_COMMIT_COLOR=always pre-commit
+  pre-commit-env:
+    build: {context: ., target: pre-commit}
+    network_mode: host
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    volumes:
+      - pre-commit-cache:/root/.cache/pre-commit/
+  orca-proxy:
+    build:
+      context: ../orca-proxy
+    network_mode: host
+    volumes:
+      - ../orca-proxy/expkey.json:/srv/key/mykey.json:ro
+  database:
+    image: "postgres:latest"
+    network_mode: host
+    restart: always
+    container_name: me_database
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=proser
+      - POSTGRES_DB=pistol
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - postgres-run:/var/run/postgresql/
+    ports:
+      - "5432:5432"
+  database-shell:
+    image: "postgres:latest"
+    entrypoint: su postgres -c 'psql pistol'
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    depends_on:
+      - database
+    volumes:
+      - postgres-run:/var/run/postgresql/
+
+volumes:
+  pre-commit-cache: {}
+  db-data: {}
+  postgres-run: {}

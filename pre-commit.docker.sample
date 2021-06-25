@@ -1,0 +1,31 @@
+#!/bin/bash
+# safety settings
+set -u
+set -e
+set -o pipefail
+
+# Put this file to .git/hooks/pre-commit
+
+tmpfile=$(mktemp)
+function cleanup {
+	rm -- "$tmpfile"
+}
+trap cleanup EXIT
+
+docker-compose build pre-commit > $tmpfile &
+build_pid=$!
+
+# If it takes too long, start the output
+(sleep 5 && tail --pid="$build_pid" -n+0 -f "$tmpfile")&
+watcher_pid=$!
+
+wait $build_pid
+# It would be cleaner to wait for the watcher_pid, but it would cause 5s delays most of the time due to the sleep.
+kill $watcher_pid || true
+#if wait $watcher_pid; then
+#    echo watcher passed
+#else
+#    echo watcher failed
+#fi
+
+docker-compose run pre-commit

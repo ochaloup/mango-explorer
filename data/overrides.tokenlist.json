@@ -125,6 +125,24 @@
         "serumV3Usdc": "77quYg4MGneUdjgXCunt9GgM1usmrxKY31twEy3WHwcS",
         "website": "https://tether.to/"
       }
+    },
+    {
+      "chainId": 101,
+      "address": "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
+      "symbol": "MSOL",
+      "name": "Marinade staked SOL (mSOL)",
+      "decimals": 9,
+      "logoURI": "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So/logo.png",
+      "extensions": {
+        "coingeckoId": "msol",
+        "discord": "https://discord.gg/mGqZA5pjRN",
+        "github": "https://github.com/marinade-finance",
+        "medium": "https://medium.com/marinade-finance",
+        "serumV3Usdc": "6oGsL2puUgySccKzn9XA9afqF217LfxP5ocq4B3LWsjy",
+        "serumV3Sol": "5cLrMai1DsLRYc1Nio9qMTicsWtvzjzZfJPXyAoF4t1Z",
+        "twitter": "https://twitter.com/MarinadeFinance",
+        "website": "https://marinade.finance"
+      }
     }
   ],
   "version": {

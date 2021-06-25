@@ -14,11 +14,13 @@
 #   [Email](mailto:hello@blockworks.foundation)
 
 import enum
+import logging
 import mango
 import typing
 
 from solana.publickey import PublicKey
 
+from ..spotmarket import SpotMarketStub
 from ..constants import SYSTEM_PROGRAM_ADDRESS
 from ..modelstate import ModelState
 from .modelstatebuilder import ModelStateBuilder, WebsocketModelStateBuilder, SerumPollingModelStateBuilder, SpotPollingModelStateBuilder, PerpPollingModelStateBuilder
@@ -43,11 +45,13 @@ class ModelUpdateMode(enum.Enum):
 def model_state_builder_factory(mode: ModelUpdateMode, context: mango.Context, disposer: mango.DisposePropagator,
                                 websocket_manager: mango.WebSocketSubscriptionManager, health_check: mango.HealthCheck,
                                 wallet: mango.Wallet, group: mango.Group, account: mango.Account,
-                                market: mango.Market, oracle: mango.Oracle) -> ModelStateBuilder:
+                                market: mango.Market,
+                                # CHKP addition
+                                oracles: typing.Sequence[str]) -> ModelStateBuilder:
     if mode == ModelUpdateMode.WEBSOCKET:
-        return _websocket_model_state_builder_factory(context, disposer, websocket_manager, health_check, wallet, group, account, market, oracle)
+        return _websocket_model_state_builder_factory(context, disposer, websocket_manager, health_check, wallet, group, account, market, oracles)
     else:
-        return _polling_model_state_builder_factory(context, wallet, group, account, market, oracle)
+        return _polling_model_state_builder_factory(context, wallet, group, account, market, oracles)
 
 
 def _polling_model_state_builder_factory(context: mango.Context, wallet: mango.Wallet, group: mango.Group,
@@ -82,7 +86,8 @@ def _polling_serum_model_state_builder_factory(context: mango.Context, wallet: m
         raise Exception(
             f"Could not find serum openorders account owned by {wallet.address} for market {market.symbol}.")
     return SerumPollingModelStateBuilder(
-        all_open_orders[0].address, market, oracle, group.address, group.cache, account.address, all_open_orders[0].address, base_account, quote_account)
+        # CHKP change - instead of account.address - using None - why?
+        all_open_orders[0].address, market, oracle, group.address, group.cache, None, all_open_orders[0].address, base_account, quote_account)
 
 
 def _polling_spot_model_state_builder_factory(group: mango.Group, account: mango.Account, market: mango.SpotMarket,
@@ -106,22 +111,39 @@ def _websocket_model_state_builder_factory(context: mango.Context, disposer: man
                                            websocket_manager: mango.WebSocketSubscriptionManager,
                                            health_check: mango.HealthCheck, wallet: mango.Wallet,
                                            group: mango.Group, account: mango.Account, market: mango.Market,
-                                           oracle: mango.Oracle) -> ModelStateBuilder:
+                                           # CHKP change
+                                           oracles: typing.Sequence[str]) -> ModelStateBuilder:
     group_watcher = mango.build_group_watcher(context, websocket_manager, health_check, group)
     cache = mango.Cache.load(context, group.cache)
     cache_watcher = mango.build_cache_watcher(context, websocket_manager, health_check, cache, group)
     account_subscription, latest_account_observer = mango.build_account_watcher(
         context, websocket_manager, health_check, account, group_watcher, cache_watcher)
 
-    initial_price = oracle.fetch_price(context)
-    price_feed = oracle.to_streaming_observable(context)
-    latest_price_observer = mango.LatestItemObserverSubscriber(initial_price)
-    price_disposable = price_feed.subscribe(latest_price_observer)
-    disposer.add_disposable(price_disposable)
-    health_check.add("price_subscription", price_feed)
+    # CHKP additions (and removal)
+    # initial_price = oracle.fetch_price(context)
+    # price_feed = oracle.to_streaming_observable(context)
+    # latest_price_observer = mango.LatestItemObserverSubscriber(initial_price)
+    latest_price_observers = {
+        provider_name: mango.build_price_watcher(
+            context,
+            websocket_manager,
+            health_check,
+            disposer,
+            provider_name,
+            market,
+        )
+        for provider_name in oracles
+    }
+    #
+    # price_disposable = price_feed.subscribe(latest_price_observer)
+    # disposer.add_disposable(price_disposable)
+    # health_check.add("price_subscription", price_feed)
 
     market = mango.ensure_market_loaded(context, market)
     if isinstance(market, mango.SerumMarket):
+        # CHKP change <- is it really needed
+        latest_account_observer = None  # There is no Mango account for a Serum market
+
         order_owner: PublicKey = market.find_openorders_address_for_owner(
             context, wallet.address) or SYSTEM_PROGRAM_ADDRESS
         price_watcher: mango.Watcher[mango.Price] = mango.build_price_watcher(
@@ -145,7 +167,8 @@ def _websocket_model_state_builder_factory(context: mango.Context, disposer: man
                 spot_market = context.market_lookup.find_by_symbol(spot_market_symbol)
                 if spot_market is None:
                     raise Exception(f"Could not find spot market {spot_market_symbol}")
-                if not isinstance(spot_market, mango.SpotMarket):
+                logging.info(f"spotm: {spot_market}, {type(spot_market)}")
+                if not isinstance(spot_market, mango.SpotMarket) and not isinstance(spot_market, SpotMarketStub):
                     raise Exception(f"Market {spot_market_symbol} is not a spot market")
                 oo_watcher = mango.build_spot_open_orders_watcher(
                     context, websocket_manager, health_check, wallet, account, group, spot_market)
@@ -153,6 +176,8 @@ def _websocket_model_state_builder_factory(context: mango.Context, disposer: man
                 if market.base == spot_market.base and market.quote == spot_market.quote:
                     latest_open_orders_observer = oo_watcher
 
+        account_subscription, latest_account_observer = mango.build_account_watcher(
+            context, websocket_manager, health_check, account, group_watcher, cache_watcher)
         inventory_watcher = mango.SpotInventoryAccountWatcher(
             market, latest_account_observer, group_watcher, all_open_orders_watchers, cache_watcher)
         latest_orderbook_watcher = mango.build_orderbook_watcher(
@@ -161,6 +186,8 @@ def _websocket_model_state_builder_factory(context: mango.Context, disposer: man
             context, websocket_manager, health_check, market)
     elif isinstance(market, mango.PerpMarket):
         order_owner = account.address
+        account_subscription, latest_account_observer = mango.build_account_watcher(
+            context, websocket_manager, health_check, account, group_watcher, cache_watcher)
         inventory_watcher = mango.PerpInventoryAccountWatcher(
             market, latest_account_observer, group_watcher, cache_watcher, group)
         latest_open_orders_observer = mango.build_perp_open_orders_watcher(
@@ -173,6 +200,6 @@ def _websocket_model_state_builder_factory(context: mango.Context, disposer: man
         raise Exception(f"Could not determine type of market {market.symbol}")
 
     model_state = ModelState(order_owner, market, group_watcher, latest_account_observer,
-                             latest_price_observer, latest_open_orders_observer,
+                             latest_price_observers, latest_open_orders_observer,
                              inventory_watcher, latest_orderbook_watcher, latest_event_queue_watcher)
     return WebsocketModelStateBuilder(model_state)

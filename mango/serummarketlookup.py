@@ -110,6 +110,7 @@ class SerumMarketLookup(MarketLookup):
 
             market_address_string = base_data["extensions"]["serumV3Usdc"]
             market_address = PublicKey(market_address_string)
+
         elif quote.symbol == "USDT":
             if "serumV3Usdt" not in base_data["extensions"]:
                 self._logger.warning(f"No USDT market found for base token '{base.symbol}'.")
@@ -117,9 +118,18 @@ class SerumMarketLookup(MarketLookup):
 
             market_address_string = base_data["extensions"]["serumV3Usdt"]
             market_address = PublicKey(market_address_string)
+
+        elif quote.symbol == "SOL":
+            if "serumV3Sol" not in base_data["extensions"]:
+                self._logger.warning(f"No SOL market found for base token '{base.symbol}'.")
+                return None
+
+            market_address_string = base_data["extensions"]["serumV3Sol"]
+            market_address = PublicKey(market_address_string)
+
         else:
             self._logger.warning(
-                f"Could not find market with quote token '{quote.symbol}'. Only markets based on USDC or USDT are supported.")
+                f"Could not find market with quote token '{quote.symbol}'. Only markets based on USDC, USDT or SOL are supported.")
             return None
 
         return SerumMarketStub(self.serum_program_address, market_address, base, quote)

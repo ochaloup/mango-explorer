@@ -34,6 +34,7 @@ from .roundtolotsizeelement import RoundToLotSizeElement
 from .ratioselement import RatiosElement
 from .topofbookelement import TopOfBookElement
 
+
 _DEFAULT_CHAIN = [
     "confidenceinterval",
     "minimumcharge",

@@ -29,6 +29,10 @@ from .context import Context
 from .observables import EventSource
 from .reconnectingwebsocket import ReconnectingWebsocket
 
+import rx
+import rx.operators as rxop
+from mango import observable_pipeline_error_reporter
+
 
 # # 🥭 WebSocketSubscription class
 #
@@ -69,6 +73,14 @@ class WebSocketSubscription(Disposable, typing.Generic[TSubscriptionInstance], m
         self.ws = ws
         ws.open()
         self._pong_subscription = ws.pong.subscribe(self.pong)
+
+        if self.context.cfg.reconnect_interval > 0:
+            rx.interval(self.context.cfg.reconnect_interval).pipe(
+                rxop.observe_on(self.context.create_thread_pool_scheduler()),
+                rxop.do_action(lambda x: ws.force_reconnect()),
+                rxop.catch(observable_pipeline_error_reporter),
+                rxop.retry()
+            ).subscribe()
 
     def close(self) -> None:
         if self.ws is not None:
