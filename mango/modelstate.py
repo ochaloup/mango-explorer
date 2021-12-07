@@ -28,6 +28,7 @@ from .oracle import Price
 from .orders import Order, OrderBook
 from .placedorder import PlacedOrdersContainer
 from .watcher import Watcher
+from dataclasses import dataclass
 
 
 # # 🥭 ModelState class
@@ -40,7 +41,7 @@ class ModelState:
                  market: Market,
                  group_watcher: Watcher[Group],
                  account_watcher: Watcher[Account],
-                 price_watcher: Watcher[Price],
+                 price_watchers: typing.Dict[str, Watcher[Price]],
                  placed_orders_container_watcher: Watcher[PlacedOrdersContainer],
                  inventory_watcher: Watcher[Inventory],
                  orderbook: Watcher[OrderBook]
@@ -50,7 +51,7 @@ class ModelState:
         self.market: Market = market
         self.group_watcher: Watcher[Group] = group_watcher
         self.account_watcher: Watcher[Account] = account_watcher
-        self.price_watcher: Watcher[Price] = price_watcher
+        price_watchers: typing.Dict[str, Watcher[Price]]
         self.placed_orders_container_watcher: Watcher[
             PlacedOrdersContainer] = placed_orders_container_watcher
         self.inventory_watcher: Watcher[Inventory] = inventory_watcher
@@ -58,6 +59,7 @@ class ModelState:
 
         self.not_quoting: bool = False
         self.state: typing.Dict[str, typing.Any] = {}
+        self.values = ModelStateValues()
 
     @property
     def group(self) -> Group:
@@ -68,8 +70,11 @@ class ModelState:
         return self.account_watcher.latest
 
     @property
-    def price(self) -> Price:
-        return self.price_watcher.latest
+    def prices(self) -> typing.Dict[str, Price]:
+       return {
+           exchange_name: price_watcher.latest
+           for exchange_name, price_watcher in self.price_watchers.items()
+       }
 
     @property
     def placed_orders_container(self) -> PlacedOrdersContainer:
@@ -111,10 +116,14 @@ class ModelState:
         return list([o for o in all_orders if o.owner == self.order_owner])
 
     def __str__(self) -> str:
+        prices = {
+            exchange_name: price_watcher.latest
+            for exchange_name, price_watcher in self.price_watchers.items()
+        }
         return f"""« ModelState for market '{self.market.symbol}'
     Group: {self.group_watcher.latest.address}
     Account: {self.account_watcher.latest.address}
-    Price: {self.price_watcher.latest}
+    Price: {prices}
     Inventory: {self.inventory_watcher.latest}
     Existing Order Count: {len(self.placed_orders_container_watcher.latest.placed_orders)}
     Bid Count: {len(self.bids)}
@@ -123,3 +132,21 @@ class ModelState:
 
     def __repr__(self) -> str:
         return f"{self}"
+
+
+@dataclass
+class ModelStateValues:
+
+    existing_orders: typing.Optional[typing.Sequence[mango.Order]] = None
+
+    fair_price: typing.Optional[Decimal] = None
+
+    best_quote_price_bid: typing.Optional[Decimal] = None
+    best_quote_price_ask: typing.Optional[Decimal] = None
+
+    best_quantity_buy: typing.Optional[Decimal] = None
+    best_quantity_sell: typing.Optional[Decimal] = None
+
+    def update(self, values: "ModelStateValues") -> None:
+        valid = {k: v for k, v in values.__dict__.items() if v is not None}
+        self.__dict__.update(valid)
