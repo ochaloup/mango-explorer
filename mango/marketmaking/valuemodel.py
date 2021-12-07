@@ -1,7 +1,7 @@
 from typing import TypeVar, Generic
 import logging
 
-from mango.marketmaking.modelstate import ModelState, ModelStateValues
+from mango.modelstate import ModelState, ModelStateValues
 
 
 T = TypeVar('T')

@@ -76,7 +76,7 @@ class WebSocketSubscription(Disposable, typing.Generic[TSubscriptionInstance], m
 
         if self.context.reconnect_interval > 0:
             rx.interval(self.context.reconnect_interval).pipe(
-                rxop.observe_on(self.context.pool_scheduler),
+                rxop.observe_on(self.context.create_thread_pool_scheduler()),
                 rxop.catch(observable_pipeline_error_reporter),
                 rxop.retry()
             ).subscribe(lambda x: ws.force_reconnect())

@@ -48,11 +48,6 @@ def parse_args(args=None):
     mango.ContextBuilder.add_command_line_parameters(parser)
     mango.Wallet.add_command_line_parameters(parser)
     parser.add_argument(
-        "--notify-errors",
-        type=mango.parse_subscription_target, action="append", default=[],
-        help="The notification target for error events"
-    )
-    parser.add_argument(
         "-n", "--dry-run",
         action="store_true", default=False,
         help="runs as read-only and does not perform any transactions"
@@ -102,13 +97,14 @@ def override_args(cfg, args):
 
 def setup_logging(args):
 
-    logging.getLogger().setLevel(args.log_level)
+    logging.getLogger().setLevel(logging.INFO)
     logging.warning(mango.WARNING_DISCLAIMER_TEXT)
 
-    for notify in args.notify_errors:
-        handler = mango.NotificationHandler(notify)
-        handler.setLevel(logging.ERROR)
-        logging.getLogger().addHandler(handler)
+    # CHKP TODO
+    # for notify in args.notify_errors:
+    #    handler = mango.NotificationHandler(notify)
+    #    handler.setLevel(logging.ERROR)
+    #    logging.getLogger().addHandler(handler)
 
 
 def main():
@@ -135,18 +131,18 @@ def main():
 
     context = mango.ContextBuilder.from_command_line_parameters(args)
     logging.info(f"{context}")
-
     wallet = mango.Wallet.from_command_line_parameters(args) \
         or mango.Wallet.load(cfg.account.key_file)
     group = mango.Group.load(context, context.group_address)
     try:
-        account = mango.Account.load_for_owner_by_index(
+        account = mango.Account.load_for_owner_by_address(
             context,
             wallet.address,
             group,
-            args.account_index
+            None
         )
-    except Exception:  # Could not find any Mango accounts for owner '{owner}'
+    except Exception as e:
+        logging.error(f'Could not find any Mango accounts for owner {wallet.address}: {e}')
         account = None
 
     market_symbol = cfg.marketmaker.pair
@@ -162,10 +158,10 @@ def main():
             raise Exception(f"Could not find market {market_symbol}")
 
         # The market index is also the index of the base token in the group's token list.
-        if market.quote != group.shared_quote_token.token:
+        if market.quote != group.shared_quote_token:
             raise Exception(
                 f"Group {group.name} uses shared quote token"
-                f" {group.shared_quote_token.token.symbol}/{group.shared_quote_token.token.mint},"
+                f" {group.shared_quote_token.token.symbol}/{group.shared_quote_token.mint},"
                 f" but market {market.symbol} uses"
                 f" quote token {market.quote.symbol}/{market.quote.mint}."
             )
@@ -216,15 +212,15 @@ def main():
                 group,
                 account,
                 market,
-                cfg.marketmaker.oracle_providers,
+                cfg.marketmaker.oracle_providers
             )
 
         health_check.add("marketmaker_pulse", market_maker.pulse_complete)
 
         if account is not None:
             logging.info(f"Current assets in account {account.address} (owner: {account.owner}):")
-            assets = [asset for asset in account.net_assets if asset is not None]
-            mango.TokenValue.report(assets, logging.info)
+            net_values = [net_value for net_value in account.net_values if net_value is not None]
+            mango.InstrumentValue.report(net_values)
 
         manager.open()
 
@@ -235,7 +231,7 @@ def main():
             )
 
         pulse_disposable = rx.interval(cfg.marketmaker.poll_interval_seconds).pipe(
-            rxop.observe_on(context.pool_scheduler),
+            rxop.observe_on(context.create_thread_pool_scheduler()),
             rxop.start_with(-1),
             rxop.catch(mango.observable_pipeline_error_reporter),
             rxop.retry()

@@ -11,6 +11,7 @@ from pathlib import Path
 
 import mango
 from mango.client import TransactionException
+from mango.orders import OrderBook
 from mango.types_ import Configuration, MarketMakerConfiguration
 
 # # 🥭 SimpleMarketMaker class
@@ -59,8 +60,7 @@ def floor_quote(ratio, x, tol):
 
 
 class SimpleModelState:
-    bids: mango.Watcher[List[mango.Order]]
-    asks: mango.Watcher[List[mango.Order]]
+    orderbook: mango.Watcher[OrderBook]
     oracle_price: mango.Watcher[Decimal]
 
 
@@ -93,23 +93,12 @@ class SimpleSerumModelState(SimpleModelState):
         )
 
         if isinstance(market, mango.SerumMarket):
-
-            self.bids: mango.Watcher[List[mango.Order]] = \
-                mango.build_serum_orderbook_side_watcher(
+            self.orderbook: mango.Watcher[mango.OrderBook] = \
+                mango.build_orderbook_watcher(
                     context,
                     websocket_manager,
                     health_check,
-                    market.underlying_serum_market,
-                    mango.OrderBookSideType.BIDS
-            )
-
-            self.asks: mango.Watcher[List[mango.Order]] = \
-                mango.build_serum_orderbook_side_watcher(
-                    context,
-                    websocket_manager,
-                    health_check,
-                    market.underlying_serum_market,
-                    mango.OrderBookSideType.ASKS
+                    market.underlying_serum_market
             )
 
 
@@ -250,7 +239,7 @@ class SimpleMarketMaker:
         for order in orders:
             self.market_operations.cancel_order(order)
 
-    def fetch_inventory(self) -> typing.Sequence[typing.Optional[mango.TokenValue]]:
+    def fetch_inventory(self) -> typing.Sequence[typing.Optional[mango.InstrumentValue]]:
         if self.market.inventory_source == mango.InventorySource.SPL_TOKENS:
             base_account = mango.TokenAccount.fetch_largest_for_owner_and_token(
                 self.context, self.wallet.address, self.market.base)
@@ -274,7 +263,7 @@ class SimpleMarketMaker:
                 raise Exception("No Mango account found.")
 
             account = accounts[0]
-            return account.net_assets
+            return account.net_values
 
     def calculate_order_prices(self):
 
@@ -284,17 +273,18 @@ class SimpleMarketMaker:
 
         if alpha < 1:
             self.logger.info(
-                f'Current best prices are: bid={self.model.bids.latest[-1].price},'
-                f' ask={self.model.asks.latest[0].price}'
+                f'Current best prices are: bid={self.model.orderbook.latest.top_bid},'
+                f' ask={self.model.orderbook.latest.top_ask}'
             )
             book_mid = (
-                self.model.bids.latest[-1].price
-                + self.model.asks.latest[0].price
+                self.model.orderbook.latest.top_bid.price
+                + self.model.orderbook.latest.top_ask
             ) / 2
 
         else:
             book_mid = 0
 
+        # CHKP TODO oracle_price is not a type Watcher and it has never been, does it work this way?
         oracle_mid = self.model.oracle_price.latest.mid_price
 
         fair_price = alpha * oracle_mid + (1 - alpha) * book_mid
@@ -306,7 +296,7 @@ class SimpleMarketMaker:
 
     def calculate_order_quantities(
             self,
-            inventory: typing.Sequence[typing.Optional[mango.TokenValue]],
+            inventory: typing.Sequence[typing.Optional[mango.InstrumentValue]],
             current_orders: typing.Sequence[mango.Order]
     ):
         """
@@ -319,7 +309,7 @@ class SimpleMarketMaker:
         """
         price = self.model.oracle_price.latest
 
-        base_tokens: typing.Optional[mango.TokenValue] = mango.TokenValue.find_by_token(
+        base_tokens: typing.Optional[mango.InstrumentValue] = mango.InstrumentValue.find_by_token(
             inventory, price.market.base
         )
         if base_tokens is None:
@@ -327,7 +317,7 @@ class SimpleMarketMaker:
                 f"Could not find market-maker base token {price.market.base.symbol} in inventory."
             )
 
-        quote_tokens: typing.Optional[mango.TokenValue] = mango.TokenValue.find_by_token(
+        quote_tokens: typing.Optional[mango.InstrumentValue] = mango.InstrumentValue.find_by_token(
             inventory, price.market.quote
         )
         if quote_tokens is None:

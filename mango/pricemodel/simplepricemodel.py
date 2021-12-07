@@ -8,7 +8,7 @@ from decimal import Decimal
 import logging
 
 from mango.types_ import Configuration
-from mango.marketmaking.modelstate import ModelState, ModelStateValues
+from mango.modelstate import ModelState, ModelStateValues
 from mango.marketmaking.valuemodel import ValueModel
 
 

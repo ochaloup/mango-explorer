@@ -51,7 +51,7 @@ class ModelState:
         self.market: Market = market
         self.group_watcher: Watcher[Group] = group_watcher
         self.account_watcher: Watcher[Account] = account_watcher
-        price_watchers: typing.Dict[str, Watcher[Price]]
+        self.price_watchers: typing.Dict[str, Watcher[Price]] = price_watchers
         self.placed_orders_container_watcher: Watcher[
             PlacedOrdersContainer] = placed_orders_container_watcher
         self.inventory_watcher: Watcher[Inventory] = inventory_watcher
@@ -75,6 +75,10 @@ class ModelState:
            exchange_name: price_watcher.latest
            for exchange_name, price_watcher in self.price_watchers.items()
        }
+
+    @property
+    def price(self) -> Price:
+       raise NotImplementedError('Use property method prices()')
 
     @property
     def placed_orders_container(self) -> PlacedOrdersContainer:
@@ -137,7 +141,7 @@ class ModelState:
 @dataclass
 class ModelStateValues:
 
-    existing_orders: typing.Optional[typing.Sequence[mango.Order]] = None
+    existing_orders: typing.Optional[typing.Sequence[Order]] = None
 
     fair_price: typing.Optional[Decimal] = None
 

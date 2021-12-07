@@ -14,15 +14,20 @@
 #   [Email](mailto:hello@blockworks.foundation)
 
 import enum
+from logging import log
+import logging
 import mango
 import typing
 
 from solana.publickey import PublicKey
 
+from ..spotmarket import SpotMarketStub
 from ..constants import SYSTEM_PROGRAM_ADDRESS
 from ..modelstate import ModelState
 from .modelstatebuilder import ModelStateBuilder, WebsocketModelStateBuilder, SerumPollingModelStateBuilder, SpotPollingModelStateBuilder, PerpPollingModelStateBuilder
 from mango.types_ import Configuration
+
+from mango import spotmarket
 
 
 class ModelUpdateMode(enum.Enum):
@@ -49,7 +54,7 @@ def model_state_builder_factory(cfg: Configuration, # <- CHKP addition
                                 # CHKP addition
                                 oracles: typing.Sequence[str]) -> ModelStateBuilder:
     if mode == ModelUpdateMode.WEBSOCKET:
-        return _websocket_model_state_builder_factory(context, disposer, websocket_manager, health_check, wallet, group, account, market, oracles)
+        return _websocket_model_state_builder_factory(cfg, context, disposer, websocket_manager, health_check, wallet, group, account, market, oracles)
     else:
         return _polling_model_state_builder_factory(context, wallet, group, account, market, oracles)
 
@@ -167,7 +172,8 @@ def _websocket_model_state_builder_factory(cfg: Configuration,
                 spot_market = context.market_lookup.find_by_symbol(spot_market_symbol)
                 if spot_market is None:
                     raise Exception(f"Could not find spot market {spot_market_symbol}")
-                if not isinstance(spot_market, mango.SpotMarket):
+                logging.info(f"spotm: {spot_market}, {type(spot_market)}")
+                if not isinstance(spot_market, mango.SpotMarket) and not isinstance(spot_market, SpotMarketStub):
                     raise Exception(f"Market {spot_market_symbol} is not a spot market")
                 oo_watcher = mango.build_spot_open_orders_watcher(
                     context, websocket_manager, health_check, wallet, account, group, spot_market)

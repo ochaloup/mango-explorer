@@ -4,7 +4,7 @@ import mango
 from mango.types_ import MarketMakerConfiguration
 from mango.pricemodel.simplepricemodel import FairPriceModel
 from mango.marketmaking.valuemodel import ValueModel
-from mango.marketmaking.modelstate import ModelState, ModelStateValues
+from mango.modelstate import ModelState, ModelStateValues
 
 
 def floor_quote(ratio, x, tol):
@@ -50,8 +50,8 @@ class BestQuoteQuantityModel(ValueModel[MarketMakerConfiguration]):
 
     def eval(self, model_state: ModelState) -> ModelStateValues:
 
-        base_tokens: mango.TokenValue = model_state.inventory.base
-        quote_tokens: mango.TokenValue = model_state.inventory.quote
+        base_tokens: mango.InstrumentValue = model_state.inventory.base
+        quote_tokens: mango.InstrumentValue = model_state.inventory.quote
 
         fair_price = model_state.values.fair_price
         existing_orders = model_state.values.existing_orders

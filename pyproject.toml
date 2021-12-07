@@ -26,6 +26,7 @@ rxpy-backpressure = "^1.0.0"
 solana = "^0.18.2"
 websocket-client = "^1.2.1"
 zstandard = "^0.16.0"
+python-configuration = "^0.8.2"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.7"

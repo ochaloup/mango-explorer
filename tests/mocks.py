@@ -1,3 +1,4 @@
+from mango.tokenbank import TokenBank
 from .context import mango
 from .fakes import fake_account_info, fake_context, fake_seeded_public_key
 
@@ -10,7 +11,7 @@ from mango.layouts import layouts
 # Mocks are more involved than fakes, but do tend to allow more introspection.
 #
 
-token_lookup = fake_context().token_lookup
+token_lookup = fake_context().instrument_lookup
 ETH = token_lookup.find_by_symbol_or_raise("ETH")
 BTC = token_lookup.find_by_symbol_or_raise("BTC")
 SOL = token_lookup.find_by_symbol_or_raise("SOL")
@@ -22,9 +23,9 @@ def mock_group():
     account_info = fake_account_info()
     name = "FAKE_GROUP"
     meta_data = mango.Metadata(layouts.DATA_TYPE.Group, mango.Version.V1, True)
-    btc_info = mango.TokenInfo(BTC, fake_seeded_public_key("root bank"), Decimal(6))
-    usdc_info = mango.TokenInfo(USDC, fake_seeded_public_key("root bank"), Decimal(6))
-    token_infos = [btc_info, None, usdc_info]
+    btc_info = mango.TokenBank(BTC, fake_seeded_public_key("root bank"))
+    usdc_info = mango.TokenBank(USDC, fake_seeded_public_key("root bank"))
+    token_banks = [btc_info, None, usdc_info]
     spot_markets = []
     perp_markets = []
     oracles = []
@@ -34,20 +35,20 @@ def mock_group():
     serum_program_address = fake_seeded_public_key("DEX program ID")
     cache_key = fake_seeded_public_key("cache key")
     valid_interval = Decimal(7)
-
-    return mango.Group(account_info, mango.Version.V1, name, meta_data, token_infos,
+    # CHKP TODO group has got a different API for creation
+    return mango.Group(account_info, mango.Version.V1, name, meta_data, token_banks,
                        spot_markets, perp_markets, oracles, signer_nonce, signer_key,
                        admin_key, serum_program_address, cache_key, valid_interval)
 
 
-def mock_prices(prices: typing.Sequence[str]):
+def mock_prices(prices: typing.Sequence[str]) -> typing.Sequence[mango.InstrumentValue]:
     eth, btc, sol, srm, usdc = prices
     return [
-        mango.TokenValue(ETH, Decimal(eth)),
-        mango.TokenValue(BTC, Decimal(btc)),
-        mango.TokenValue(SOL, Decimal(sol)),
-        mango.TokenValue(SRM, Decimal(srm)),
-        mango.TokenValue(USDC, Decimal(usdc)),
+        mango.InstrumentValue(ETH, Decimal(eth)),
+        mango.InstrumentValue(BTC, Decimal(btc)),
+        mango.InstrumentValue(SOL, Decimal(sol)),
+        mango.InstrumentValue(SRM, Decimal(srm)),
+        mango.InstrumentValue(USDC, Decimal(usdc)),
     ]
 
 

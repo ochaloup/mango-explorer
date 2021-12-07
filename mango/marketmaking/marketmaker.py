@@ -35,12 +35,12 @@ from .modelvalues import ModelValuesGraph
 #
 class MarketMaker:
     def __init__(self, wallet: mango.Wallet, market: mango.Market,
+                 market_operations: mango.MarketOperations,  # CHKP addition
                  market_instruction_builder: mango.MarketInstructionBuilder,
-                 desired_orders_chain: Chain, order_reconciler: OrderReconciler,
-                 redeem_threshold: typing.Optional[Decimal],
-                 # CHKP additions
-                 market_operations: mango.MarketOperations,
-                 model_values_graph: ModelValuesGraph) -> None:
+                 desired_orders_chain: Chain,
+                 model_values_graph: ModelValuesGraph,  # CHKP addition
+                 order_reconciler: OrderReconciler,
+                 redeem_threshold: typing.Optional[Decimal]) -> None:
         self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
         self.wallet: mango.Wallet = wallet
         self.market: mango.Market = market
@@ -62,7 +62,7 @@ class MarketMaker:
     def pulse(self, context: mango.Context, model_state: mango.ModelState) -> None:
         try:
             time_pulse_start = time.time()
-            self._logger.debug(f"[{context.name}] Pulse started with oracle price:\n    {model_state.price}")
+            self._logger.debug(f"[{context.name}] Pulse started with oracle price:\n    {model_state.prices}")
 
             payer = mango.CombinableInstructions.from_wallet(self.wallet)
 
@@ -73,8 +73,7 @@ class MarketMaker:
  
             desired_orders = self.desired_orders_chain.process(
                 context,
-                model_state,
-                existing_orders,
+                model_state
             )
 
             # This is here to give the orderchain the chance to look at state and set `not_quoting`. Any

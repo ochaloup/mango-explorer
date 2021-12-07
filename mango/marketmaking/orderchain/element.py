@@ -129,7 +129,6 @@ class LeveragedFixedRatiosElement(Element):
             self,
             context: mango.Context,
             model_state: ModelState,
-            existing_orders: typing.Sequence[mango.Order],
             orders: typing.Sequence[mango.Order],
     ) -> typing.Sequence[mango.Order]:
 
@@ -185,7 +184,6 @@ class LimitSpreadNarrowingElement(Element):
             self,
             context: mango.Context,
             model_state: ModelState,
-            existing_orders: typing.Sequence[mango.Order],
             orders: typing.Sequence[mango.Order]
     ) -> typing.Sequence[mango.Order]:
 

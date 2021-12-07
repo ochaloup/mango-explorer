@@ -14,6 +14,7 @@ from mango.configuration import load_configuration
 from mango.types_ import Configuration
 from mango.heartbeat import heartbeat, heartbeat_init
 
+
 SPL_TOKENS = mango.market.InventorySource.SPL_TOKENS
 NAME = 'account_balances'
 
@@ -56,7 +57,7 @@ def make_db_sink(cfg):
     return insert
 
 
-def get_price(context, symbol, cfg: Configuration):
+def get_price(context: mango.Context, symbol, cfg: Configuration):
 
     if symbol == 'USDC':
         return Decimal(1)
@@ -124,7 +125,7 @@ def main(args):
     cfg = load_configuration(args.config[0])
     heartbeat_init(cfg.paths.account_balances_heartbeat)
     args.cluster_url = 'http://falk2.chkp.io'
-    context = mango.ContextBuilder.from_command_line_parameters(args)
+    context: mango.Context = mango.ContextBuilder.from_command_line_parameters(args)
     address = cfg.account.address
     sink = make_db_sink(cfg.database)
     group = mango.Group.load(context)
@@ -157,8 +158,8 @@ def main(args):
         )
         for symbol in spl_symbols:
 
-            token = context.token_lookup.find_by_symbol(symbol)
-            balance = mango.TokenValue.fetch_total_value(context, address, token)
+            token = context.instrument_lookup.find_by_symbol(symbol)
+            balance = mango.InstrumentValue.fetch_total_value(context, address, token)
 
             sink(dict(
                 timestamp=now,
@@ -184,15 +185,15 @@ def main(args):
         mango_accounts = mango.Account.load_all_for_owner(context, address, group)
         for account in mango_accounts:
             orders = collect_orders(context, wallet, account, markets)
-            for asset in account.basket_tokens:
-                if asset is not None:
-                    symbol = asset.token_info.token.name
+            for slot in account.slots_by_index:
+                if slot is not None:
+                    symbol = slot.base_instrument.name
                     sink(dict(
                         timestamp=now,
                         address=str(account.address),
                         symbol=symbol,
                         price=get_price(context, symbol, cfg),
-                        value=asset.net_value.value + orders[symbol],
+                        value=slot.net_value.value + orders[symbol],
                     ))
 
         heartbeat(cfg.paths.account_balances_heartbeat)

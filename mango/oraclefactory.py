@@ -16,7 +16,7 @@
 from .context import Context
 from .contextbuilder import ContextBuilder
 from .oracle import OracleProvider
-from .oracles.ftx import ftx, ftx_chkp
+from .oracles.ftx import ftx, ftx_mango
 from .oracles.market import market
 from .oracles.pythnetwork import pythnetwork
 from .oracles.stub import stub
@@ -35,8 +35,8 @@ def create_oracle_provider(context: Context, provider_name: str,
                            cfg: Configuration # CHKP addition
                            ) -> OracleProvider:
     proper_provider_name: str = provider_name.upper()
-    if proper_provider_name == "FTX":
-        return ftx.FtxOracleProvider()
+    if proper_provider_name == "FTX_MANGO":
+        return ftx_mango.FtxOracleProvider()
     elif proper_provider_name == "MARKET":
         return market.MarketOracleProvider()
     elif proper_provider_name == "PYTH":
@@ -49,13 +49,12 @@ def create_oracle_provider(context: Context, provider_name: str,
         return pythnetwork.PythOracleProvider(devnet_pyth_context, cfg)
     elif proper_provider_name == "STUB":
         return stub.StubOracleProvider()
-    # CHKP addition, TODO it should be upper case
-    elif proper_provider_name == "ftx":
-        return ftx_chkp.FtxOracle(cfg)
-    elif provider_name == "msol":
+    elif proper_provider_name == "FTX":
+        return ftx.FtxOracleProvider(cfg)
+    elif provider_name == "MSOL":
         return MSolOracleProvider(cfg)
-    elif provider_name == "binance":
+    elif provider_name == "BINANCE":
         return binance.BinanceOracleProvider(cfg)
-    elif provider_name == "kraken":
+    elif provider_name == "KRAKEN":
         return kraken.KrakenOracleProvider(cfg)
     raise Exception(f"Unknown oracle provider '{proper_provider_name}'.")

@@ -154,8 +154,8 @@ def build_perp_open_orders_watcher(context: Context, manager: WebSocketSubscript
 
 
 def build_price_watcher(cfg: Configuration, context: Context, manager: WebSocketSubscriptionManager, health_check: HealthCheck, disposer: DisposePropagator, provider_name: str, market: Market) -> LatestItemObserverSubscriber[Price]:
-    oracle_provider: OracleProvider = create_oracle_provider(context, provider_name)
-    oracle = oracle_provider.oracle_for_market(context, market, cfg)
+    oracle_provider: OracleProvider = create_oracle_provider(context, provider_name, cfg)
+    oracle = oracle_provider.oracle_for_market(context, market)
     if oracle is None:
         raise Exception(f"Could not find oracle for market {market.symbol} from provider {provider_name}.")
 
