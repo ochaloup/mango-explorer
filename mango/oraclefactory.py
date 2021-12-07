@@ -16,30 +16,46 @@
 from .context import Context
 from .contextbuilder import ContextBuilder
 from .oracle import OracleProvider
-from .oracles.ftx import ftx
+from .oracles.ftx import ftx, ftx_chkp
 from .oracles.market import market
 from .oracles.pythnetwork import pythnetwork
 from .oracles.stub import stub
+from .oracles.msol import MSolOracleProvider
+from .oracles.binance import binance
+from .oracles.kraken import kraken
+from mango.types_ import Configuration
+
 
 
 # # 🥭 Oracle Factory
 #
 # This file allows you to create a concreate OracleProvider for a specified provider name.
 #
-def create_oracle_provider(context: Context, provider_name: str) -> OracleProvider:
+def create_oracle_provider(context: Context, provider_name: str,
+                           cfg: Configuration # CHKP addition
+                           ) -> OracleProvider:
     proper_provider_name: str = provider_name.upper()
     if proper_provider_name == "FTX":
         return ftx.FtxOracleProvider()
     elif proper_provider_name == "MARKET":
         return market.MarketOracleProvider()
     elif proper_provider_name == "PYTH":
-        return pythnetwork.PythOracleProvider(context)
+        return pythnetwork.PythOracleProvider(context, cfg)
     elif proper_provider_name == "PYTH-MAINNET":
         mainnet_beta_pyth_context: Context = ContextBuilder.forced_to_mainnet_beta(context)
-        return pythnetwork.PythOracleProvider(mainnet_beta_pyth_context)
+        return pythnetwork.PythOracleProvider(mainnet_beta_pyth_context, cfg)
     elif proper_provider_name == "PYTH-DEVNET":
         devnet_pyth_context: Context = ContextBuilder.forced_to_devnet(context)
-        return pythnetwork.PythOracleProvider(devnet_pyth_context)
+        return pythnetwork.PythOracleProvider(devnet_pyth_context, cfg)
     elif proper_provider_name == "STUB":
         return stub.StubOracleProvider()
+    # CHKP addition, TODO it should be upper case
+    elif proper_provider_name == "ftx":
+        return ftx_chkp.FtxOracle(cfg)
+    elif provider_name == "msol":
+        return MSolOracleProvider(cfg)
+    elif provider_name == "binance":
+        return binance.BinanceOracleProvider(cfg)
+    elif provider_name == "kraken":
+        return kraken.KrakenOracleProvider(cfg)
     raise Exception(f"Unknown oracle provider '{proper_provider_name}'.")

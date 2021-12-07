@@ -18,6 +18,7 @@ import logging
 import mango
 import traceback
 import typing
+import time
 
 from datetime import datetime
 from decimal import Decimal
@@ -25,6 +26,7 @@ from decimal import Decimal
 from ..observables import EventSource
 from .orderreconciler import OrderReconciler
 from .orderchain.chain import Chain
+from .modelvalues import ModelValuesGraph
 
 
 # # 🥭 MarketMaker class
@@ -35,7 +37,10 @@ class MarketMaker:
     def __init__(self, wallet: mango.Wallet, market: mango.Market,
                  market_instruction_builder: mango.MarketInstructionBuilder,
                  desired_orders_chain: Chain, order_reconciler: OrderReconciler,
-                 redeem_threshold: typing.Optional[Decimal]) -> None:
+                 redeem_threshold: typing.Optional[Decimal],
+                 # CHKP additions
+                 market_operations: mango.MarketOperations,
+                 model_values_graph: ModelValuesGraph) -> None:
         self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
         self.wallet: mango.Wallet = wallet
         self.market: mango.Market = market
@@ -43,6 +48,10 @@ class MarketMaker:
         self.desired_orders_chain: Chain = desired_orders_chain
         self.order_reconciler: OrderReconciler = order_reconciler
         self.redeem_threshold: typing.Optional[Decimal] = redeem_threshold
+
+        # CHKP additions
+        self.market_operations = market_operations
+        self.model_values_graph = model_values_graph
 
         self.pulse_complete: EventSource[datetime] = EventSource[datetime]()
         self.pulse_error: EventSource[Exception] = EventSource[Exception]()
@@ -52,11 +61,21 @@ class MarketMaker:
 
     def pulse(self, context: mango.Context, model_state: mango.ModelState) -> None:
         try:
+            time_pulse_start = time.time()
             self._logger.debug(f"[{context.name}] Pulse started with oracle price:\n    {model_state.price}")
 
             payer = mango.CombinableInstructions.from_wallet(self.wallet)
 
-            desired_orders = self.desired_orders_chain.process(context, model_state)
+            # CHKP additions
+            # desired_orders = self.desired_orders_chain.process(context, model_state)
+            existing_orders = self.market_operations.load_my_orders()
+            self.model_values_graph.update_values(model_state, existing_orders)
+ 
+            desired_orders = self.desired_orders_chain.process(
+                context,
+                model_state,
+                existing_orders,
+            )
 
             # This is here to give the orderchain the chance to look at state and set `not_quoting`. Any
             # element in the orderchain can set this, rather than just return an empty list of desired
@@ -68,9 +87,11 @@ class MarketMaker:
                 self._logger.info(f"[{context.name}] Market-maker not quoting - model_state.not_quoting is set.")
                 return
 
-            existing_orders = model_state.current_orders()
+            # CHKP deletion
+            # existing_orders = model_state.current_orders()
             self._logger.debug(f"""Before reconciliation: all owned orders on current orderbook [{model_state.market.symbol}]:
     {mango.indent_collection_as_str(existing_orders)}""")
+
             reconciled = self.order_reconciler.reconcile(model_state, existing_orders, desired_orders)
             self._logger.debug(f"""After reconciliation
 Keep:
@@ -107,6 +128,10 @@ Ignore:
             # Don't bother if we have no orders to change
             if len(cancellations.instructions) + len(place_orders.instructions) > 0:
                 (payer + cancellations + place_orders + crank + settle + redeem).execute(context)
+
+            # CHKP additions
+            self.pulse_complete.on_next(datetime.now())
+            self.logger.info('Pulsing took %s seconds', time.time() - time_pulse_start)
 
             self.pulse_complete.on_next(datetime.now())
         except (mango.RateLimitException, mango.NodeIsBehindException, mango.BlockhashNotFoundException, mango.FailedToFetchBlockhashException) as common_exception:

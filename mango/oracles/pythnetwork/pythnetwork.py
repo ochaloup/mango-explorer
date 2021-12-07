@@ -31,6 +31,8 @@ from ...oracle import Oracle, OracleProvider, OracleSource, Price, SupportedOrac
 
 from .layouts import MAGIC, MAPPING, PRICE, PRODUCT, PYTH_DEVNET_MAPPING_ROOT, PYTH_MAINNET_MAPPING_ROOT
 
+from mango.types_ import Configuration
+
 
 # # 🥭 Pyth
 #
@@ -60,9 +62,11 @@ from .layouts import MAGIC, MAPPING, PRICE, PRODUCT, PYTH_DEVNET_MAPPING_ROOT, P
 #
 
 class PythOracle(Oracle):
-    def __init__(self, context: Context, market: Market, product_data: typing.Any):
+    def __init__(self, cfg: Configuration, context: Context, market: Market, product_data: typing.Any):
         name = f"Pyth Oracle for {market.symbol}"
         super().__init__(name, market)
+        # CHKP addition
+        self.cfg = cfg
         self.context: Context = context
         self.market: Market = market
         self.product_data: typing.Any = product_data
@@ -110,17 +114,19 @@ class PythOracle(Oracle):
 # This allows the context-fudging to only happen on construction.
 
 class PythOracleProvider(OracleProvider):
-    def __init__(self, context: Context) -> None:
+    def __init__(self, context: Context, cfg: Configuration) -> None:
         self.address: PublicKey = PYTH_MAINNET_MAPPING_ROOT if context.client.cluster_name == "mainnet" else PYTH_DEVNET_MAPPING_ROOT
         super().__init__(f"Pyth Oracle Factory [{self.address}]")
         self.context: Context = context
+        # CHKP addition
+        self.cfg: Configuration = cfg
 
     def oracle_for_market(self, _: Context, market: Market) -> typing.Optional[Oracle]:
         pyth_symbol = self._market_symbol_to_pyth_symbol(market.symbol)
         products = self._fetch_all_pyth_products(self.context, self.address)
         for product in products:
             if product.attr["symbol"] == pyth_symbol:
-                return PythOracle(self.context, market, product)
+                return PythOracle(self.cfg, self.context, market, product)
         return None
 
     def all_available_symbols(self, _: Context) -> typing.Sequence[str]:

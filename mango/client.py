@@ -686,3 +686,8 @@ class BetterClient:
 
     def __repr__(self) -> str:
         return f"{self}"
+    
+    # CHKP additions
+    def get_block_height(self):
+        response = self.compatible_client._send_request("getBlockHeight")
+        return response["result"]

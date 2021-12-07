@@ -49,6 +49,9 @@ from .wallet import Wallet
 from .watcher import Watcher, LamdaUpdateWatcher
 from .websocketsubscription import WebSocketAccountSubscription, WebSocketSubscription, WebSocketSubscriptionManager
 
+# CHKP addition
+from mango.types_ import Configuration
+
 
 def build_group_watcher(context: Context, manager: WebSocketSubscriptionManager, health_check: HealthCheck, group: Group) -> Watcher[Group]:
     group_subscription = WebSocketAccountSubscription[Group](
@@ -56,6 +59,7 @@ def build_group_watcher(context: Context, manager: WebSocketSubscriptionManager,
     manager.add(group_subscription)
     latest_group_observer = LatestItemObserverSubscriber[Group](group)
     group_subscription.publisher.subscribe(latest_group_observer)
+    # CHKP TODO - health_check should reconnect, but does not.  Investigate!
     health_check.add("group_subscription", group_subscription.publisher)
     return latest_group_observer
 
@@ -149,9 +153,9 @@ def build_perp_open_orders_watcher(context: Context, manager: WebSocketSubscript
     return latest_open_orders_observer
 
 
-def build_price_watcher(context: Context, manager: WebSocketSubscriptionManager, health_check: HealthCheck, disposer: DisposePropagator, provider_name: str, market: Market) -> LatestItemObserverSubscriber[Price]:
+def build_price_watcher(cfg: Configuration, context: Context, manager: WebSocketSubscriptionManager, health_check: HealthCheck, disposer: DisposePropagator, provider_name: str, market: Market) -> LatestItemObserverSubscriber[Price]:
     oracle_provider: OracleProvider = create_oracle_provider(context, provider_name)
-    oracle = oracle_provider.oracle_for_market(context, market)
+    oracle = oracle_provider.oracle_for_market(context, market, cfg)
     if oracle is None:
         raise Exception(f"Could not find oracle for market {market.symbol} from provider {provider_name}.")
 
@@ -160,7 +164,10 @@ def build_price_watcher(context: Context, manager: WebSocketSubscriptionManager,
     latest_price_observer = LatestItemObserverSubscriber(initial_price)
     price_disposable = price_feed.subscribe(latest_price_observer)
     disposer.add_disposable(price_disposable)
+    # CHKP addition
     health_check.add("price_subscription", price_feed)
+    symbol_code = market.symbol.replace('/', '').lower()
+    health_check.add(f"price_subscription_{provider_name}_{symbol_code}", price_feed)
     return latest_price_observer
 
 

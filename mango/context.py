@@ -60,6 +60,9 @@ class Context:
 
         self.ping_interval: int = 10
 
+        # CHKP addition
+        self.reconnect_interval: int = 300
+
         self._last_generated_client_id: int = 0
 
         # kangda said in Discord: https://discord.com/channels/791995070613159966/836239696467591186/847816026245693451

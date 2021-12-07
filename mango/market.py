@@ -29,6 +29,7 @@ from .token import Instrument, Token
 class InventorySource(enum.Enum):
     SPL_TOKENS = enum.auto()
     ACCOUNT = enum.auto()
+    SIMPLE_MARKET = enum.auto()
 
     def __str__(self) -> str:
         return self.name

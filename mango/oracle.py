@@ -72,6 +72,7 @@ class Price():
     def __init__(self, source: OracleSource, timestamp: datetime, market: Market, top_bid: Decimal, mid_price: Decimal, top_ask: Decimal, confidence: Decimal) -> None:
         self.source: OracleSource = source
         self.timestamp: datetime = timestamp
+        self.chainkeepers_timestamp = datetime.now()  # CHKP addition
         self.market: Market = market
         self.top_bid: Decimal = top_bid
         self.mid_price: Decimal = mid_price
@@ -90,6 +91,18 @@ class Price():
 
     def __repr__(self) -> str:
         return f"{self}"
+
+    def __dict__(self) -> typing.Dict[str, str]:
+        return {
+            'source': str(self.source),
+            'timestamp': str(self.timestamp),
+            'chainkeepers_timestamp': str(self.chainkeepers_timestamp),
+            'market': str(self.market),
+            'top_bid': str(self.top_bid),
+            'mid_price': str(self.mid_price),
+            'top_ask': str(self.top_ask),
+            'confidence': str(self.confidence),
+        }
 
 
 # # 🥭 Oracle class
@@ -142,3 +155,29 @@ class OracleProvider(metaclass=abc.ABCMeta):
 
     def __repr__(self) -> str:
         return f"{self}"
+
+
+# CHKP addition
+# # 🥭 AsyncOracle class
+#
+# Derived versions of this class can fetch prices for a specific market.
+#
+class AsyncOracle(metaclass=abc.ABCMeta):
+    def __init__(self, name: str, market: Market) -> None:
+        self.logger: logging.Logger = logging.getLogger(self.__class__.__name__)
+        self.name = name
+        self.market = market
+
+    @property
+    def symbol(self) -> str:
+        return self.market.symbol
+
+    @abc.abstractmethod
+    async def fetch_price(self, context: Context) -> Price:
+        raise NotImplementedError("Oracle.fetch_price() is not implemented on the base type.")
+
+    @abc.abstractmethod
+    async def to_streaming_observable(self, context: Context) -> rx.core.Observable:
+        raise NotImplementedError("Oracle.fetch_price() is not implemented on the base type.")
+
+

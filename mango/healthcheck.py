@@ -13,6 +13,7 @@
 #   [Github](https://github.com/blockworks-foundation)
 #   [Email](mailto:hello@blockworks.foundation)
 
+import os
 import rx
 import typing
 
@@ -27,6 +28,9 @@ from pathlib import Path
 #
 class HealthCheck(rx.core.typing.Disposable):
     def __init__(self, healthcheck_files_location: str = "/var/tmp") -> None:
+        # CHKP addtion
+        os.makedirs(healthcheck_files_location, exist_ok=True)
+
         self.healthcheck_files_location: str = healthcheck_files_location
         self._to_dispose: typing.List[rx.core.typing.Disposable] = []
 

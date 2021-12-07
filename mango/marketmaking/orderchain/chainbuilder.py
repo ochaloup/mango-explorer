@@ -34,6 +34,9 @@ from .roundtolotsizeelement import RoundToLotSizeElement
 from .ratioselement import RatiosElement
 from .topofbookelement import TopOfBookElement
 
+from .element import LeveragedFixedRatiosElement, LimitSpreadNarrowingElement
+from ...types_ import MarketMakerConfiguration
+
 _DEFAULT_CHAIN = [
     "confidenceinterval",
     "minimumcharge",
@@ -126,3 +129,17 @@ class ChainBuilder:
             return TopOfBookElement.from_command_line_parameters(args)
         else:
             raise Exception(f"Unknown chain element: '{proper_name}'")
+
+# CHKP addition
+def get_simple_orderchain(
+        cfg: MarketMakerConfiguration,
+        is_perp: bool  # TODO: get this to modelstate once we get rid of order_tracker
+) -> Chain:
+    return Chain([
+        LeveragedFixedRatiosElement(
+            cfg,
+            is_perp,
+        ),
+        LimitSpreadNarrowingElement(cfg),
+        PreventPostOnlyCrossingBookElement()
+    ])

@@ -107,10 +107,13 @@ class Wallet:
     #
     @staticmethod
     def from_command_line_parameters(args: argparse.Namespace) -> typing.Optional["Wallet"]:
+        logger: logging.Logger = logging.getLogger('Wallet')
+
         # We always have an args.id_file (because we specify a default) so check for the environment
         # variable and give it priority.
         environment_secret_key = os.environ.get("KEYPAIR") or os.environ.get("SECRET_KEY")
         if environment_secret_key is not None:
+            logger.info('Loading wallet from env var')  # CHKP addition
             secret_key_bytes = json.loads(environment_secret_key)
             if len(secret_key_bytes) >= 32:
                 return Wallet(secret_key_bytes)
@@ -118,6 +121,7 @@ class Wallet:
         # Here we should have values for all our parameters.
         id_filename = args.id_file
         if os.path.isfile(id_filename):
+            logger.info('Loading wallet from file')
             return Wallet.load(id_filename)
 
         return None
