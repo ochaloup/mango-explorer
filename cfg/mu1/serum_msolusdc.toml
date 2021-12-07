@@ -18,7 +18,8 @@ watch_symbols = ["ETH", "USDT", "FTT", "SRM", "COPE"]
 
 trader_heartbeat_dir = "run/solana_trader_serum_msolusdc"
 account_balances_heartbeat = "run/balances_collector_serum_msolusdc/heartbeat"
-saber_arbitrage_heartbeat = "/run/orca_arbitrage/saber_heartbeat"
+saber_arbitrage_heartbeat = "/run/arbitrage/saber_heartbeat"
+orca_arbitrage_heartbeat = "/run/arbitrage/orca_heartbeat"
 
 # [marketmaker]
 
