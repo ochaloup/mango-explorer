@@ -28,7 +28,7 @@ from mango.heartbeat import heartbeat, heartbeat_init
 
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.DEBUG)
-
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 def parse_args(args=None):
 
