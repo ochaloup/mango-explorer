@@ -124,7 +124,7 @@ def main(args):
 
     cfg = load_configuration(args.config[0])
     heartbeat_init(cfg.paths.account_balances_heartbeat)
-    args.cluster_url = 'http://falk2.chkp.io'
+    args.cluster_url = cfg.account.cluster_url
     context: mango.Context = mango.ContextBuilder.from_command_line_parameters(args)
     address = cfg.account.address
     sink = make_db_sink(cfg.database)
