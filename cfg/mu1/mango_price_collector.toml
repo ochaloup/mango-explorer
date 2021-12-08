@@ -4,7 +4,7 @@ base = "common.toml"
 
 [paths]
 # paths are automatically prefixed by PREFIX environment variable
-heartbeat = 'run/mango_price_collector/heartbeat'
+price_collector_heartbeat = 'run/mango_price_collector/heartbeat'
 
 [price_collector]
 server_name = "mu1"

@@ -12,6 +12,7 @@ watch_markets = ["COPE/USDC"]
 [paths]
 
 trader_heartbeat_dir = "run/solana_trader_mango_copeusdc"
+account_balances_heartbeat = "run/balances_collector_mango_copeusdc/heartbeat"
 
 [marketmaker]
 

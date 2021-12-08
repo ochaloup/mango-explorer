@@ -66,7 +66,7 @@ class Collector:
         self.max_number_of_observations = cfg.price_collector.max_number_of_observations
         self.target_dir = cfg.paths.datadir
         self.server_name = cfg.price_collector.server_name
-        self.heartbeat_filepath = cfg.paths.heartbeat
+        self.heartbeat_filepath = cfg.paths.price_collector_heartbeat
 
         # number of observations per file
         self.number_of_observations: typing.Dict[str, typing.Dict[str, int]] = {
@@ -196,7 +196,7 @@ class Collector:
 def main(args: argparse.Namespace) -> None:
     try:
         cfg = load_configuration(args.config[0])
-        heartbeat_init(cfg.paths.heartbeat)
+        heartbeat_init(cfg.paths.price_collector_heartbeat)
         args.cluster_url = cfg.account.cluster_url
         context = mango.ContextBuilder.from_command_line_parameters(args)
 
@@ -261,8 +261,8 @@ def main(args: argparse.Namespace) -> None:
         collector.stop()
     except Exception as exception:
         logging.critical(
-            "Price collector stopped because of exception: %s - {traceback.format_exc()}",
-            exception
+            "Price collector stopped because of exception: %s - %s",
+            exception, traceback.format_exc()
         )
     except:  # noqa: E722
         logging.critical(

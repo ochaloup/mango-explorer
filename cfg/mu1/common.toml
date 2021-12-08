@@ -19,9 +19,8 @@ key_file = "/srv/key/mango-explorer/mu1.json"
 
 tmpdir = "data/tmp"  # to be changed
 datadir = "data/solana"
-# heartbeat filename; the application may add suffix and to produce multiple heartbeat_<suffix> files
-heartbeat = "run/heartbeat"
-orca_arbitrage_heartbeat = "/run/orca_arbitrage/heartbeat"
+orca_arbitrage_heartbeat = "run/orca_arbitrage/heartbeat"
+
 
 [marketmaker]
 # marketmaker cfg is here because otherwise the loading of common cfg fails

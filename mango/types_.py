@@ -22,11 +22,11 @@ def wrap_decimal(num, name):
 class PathsConfiguration:
     tmpdir: str
     datadir: str
-    heartbeat: str
-    orca_arbitrage_heartbeat: str
-    saber_arbitrage_heartbeat: str = '/run/saber_arbitrage/heartbeat'
-    trader_heartbeat_dir: str = '/var/tmp'
-    account_balances_heartbeat: str = '/var/tmp/heartbeat'
+    orca_arbitrage_heartbeat: Optional[str] = None
+    saber_arbitrage_heartbeat: Optional[str] = None
+    trader_heartbeat_dir: Optional[str] = None
+    account_balances_heartbeat: Optional[str] = None
+    price_collector_heartbeat: Optional[str] = None
 
 
 @dataclass
