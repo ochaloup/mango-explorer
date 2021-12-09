@@ -10,6 +10,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Crazy workaround for marinade-anchor
+      run: mkdir ../marinade-anchor
     - name: Build the docker-compose stack
       run: docker-compose build pytest
     - name: Build the docker-compose stack
