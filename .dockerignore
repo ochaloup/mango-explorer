@@ -1,6 +1,5 @@
 .DS_Store
 .pytest_cache
-.git
 .venv
 .version
 wallet.json
