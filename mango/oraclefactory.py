@@ -51,10 +51,10 @@ def create_oracle_provider(context: Context, provider_name: str,
         return stub.StubOracleProvider()
     elif proper_provider_name == "FTX":
         return ftx.FtxOracleProvider(cfg)
-    elif provider_name == "MSOL":
+    elif proper_provider_name == "MSOL":
         return MSolOracleProvider(cfg)
-    elif provider_name == "BINANCE":
+    elif proper_provider_name == "BINANCE":
         return binance.BinanceOracleProvider(cfg)
-    elif provider_name == "KRAKEN":
+    elif proper_provider_name == "KRAKEN":
         return kraken.KrakenOracleProvider(cfg)
     raise Exception(f"Unknown oracle provider '{proper_provider_name}'.")
