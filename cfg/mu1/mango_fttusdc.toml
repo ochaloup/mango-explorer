@@ -18,7 +18,7 @@ account_balances_heartbeat = "run/balances_collector_mango_fttusdc/heartbeat"
 
 pair = "FTT/USDC"
 min_quote_size = "4"
-spread_ratio = "0.0012"
+spread_ratio = "0.0015"
 position_size_ratios = ["0.4", "0.4"]
 oracle_providers = ["ftx"]
 # price_weights determines the weight of oracles in calculating fair price

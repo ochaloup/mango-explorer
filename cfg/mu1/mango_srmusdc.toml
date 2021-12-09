@@ -18,7 +18,7 @@ account_balances_heartbeat = "run/balances_collector_mango_srmusdc/heartbeat"
 
 pair = "SRM/USDC"
 min_quote_size = "100"
-spread_ratio = "0.0012"
+spread_ratio = "0.0015"
 spread_narrowing_coef = "0.5"
 position_size_ratios = ["0.3", "0.3"]
 oracle_providers = ["ftx", "kraken"]
