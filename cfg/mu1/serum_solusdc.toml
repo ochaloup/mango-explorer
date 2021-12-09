@@ -22,7 +22,6 @@ position_size_ratios = ["0.9", "0"]
 oracle_providers = ["ftx"]
 # price_weights determines the weight of oracles in calculating fair price
 price_weights = [1]
-oracle_coefs = ["0.5"]
 existing_order_tolerance = "0.0002"
 confidence_interval_level = [1]
 leverage = 1
