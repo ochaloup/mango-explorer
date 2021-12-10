@@ -4,8 +4,7 @@ base = "common.toml"
 
 [account]
 
-cluster_url = "https://chainkeepers.rpcpool.com/d68cb8562e9a18e95369a971b0aa"
-#cluster_url = "https://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
+cluster_url = "https://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
 address = "HbpeWxfmtzdtBJEe71JVp6isfKHk6sxrpXhD6Ew96pJ5"
 key_file = "/srv/key/mango-explorer/sbg1/HbpeWxfmtzdtBJEe71JVp6isfKHk6sxrpXhD6Ew96pJ5.json"
 watch_markets = ["RAY/USDC"]
