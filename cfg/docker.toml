@@ -7,20 +7,21 @@ dashboard_url = "postgresql+psycopg2://postgres:proser@127.0.0.1/pistol"
 [account]
 key_file = "/srv/key/mango-explorer/empty.json"
 orca_proxy_url = "http://localhost:1080"
-
+watch_markets = ["COPE/USDC"]
 [marketmaker]
 
-pair = "MSOL/USDC"
-min_quote_size = "0.5"
-spread_ratio = "0.0008"
-position_size_ratios = ["0", "0.2"]
+pair = "COPE/USDC"
+min_quote_size = "4"
+spread_ratio = "0.005"
+position_size_ratios = ["0.4", "0.4"]
 oracle_providers = ["ftx"]
 # price_weights determines the weight of oracles in calculating fair price
 price_weights = [1]
-existing_order_tolerance = "0.0002"
+existing_order_price_tolerance = "0.0005"
+existing_order_quantity_tolerance = "0.3"
 confidence_interval_level = [1]
-leverage = 1
-poll_interval_seconds = 10
+leverage = "2"  # COPE has tight haircut - max leverage is lower!
+poll_interval_seconds = 5
 
 
 [marinade_staking]
