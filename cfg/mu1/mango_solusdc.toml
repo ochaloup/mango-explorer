@@ -18,8 +18,8 @@ account_balances_heartbeat = "run/balances_collector_mango_solusdc/heartbeat"
 
 pair = "SOL/USDC"
 min_quote_size = "2"
-spread_ratio = "0.0008"
-position_size_ratios = ["0.2", "0.2"]
+spread_ratio = "0.001"
+position_size_ratios = ["0.3", "0.3"]
 oracle_providers = ["ftx"]
 # price_weights determines the weight of oracles in calculating fair price
 price_weights = [1]
