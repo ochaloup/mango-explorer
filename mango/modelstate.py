@@ -69,6 +69,7 @@ class ModelState:
     def account(self) -> Account:
         return self.account_watcher.latest
 
+    # CHKP addition
     @property
     def prices(self) -> typing.Dict[str, Price]:
        return {

@@ -256,14 +256,14 @@ def fake_model_state(order_owner: typing.Optional[PublicKey] = None,
     orderbook = orderbook or mango.OrderBook("FAKE", NullLotSizeConverter(), fake_bids(), fake_asks())
     group_watcher: mango.ManualUpdateWatcher[mango.Group] = mango.ManualUpdateWatcher(group)
     account_watcher: mango.ManualUpdateWatcher[mango.Account] = mango.ManualUpdateWatcher(account)
-    price_watcher: mango.ManualUpdateWatcher[mango.Price] = mango.ManualUpdateWatcher(price)
+    price_watchers: typing.Dict[mango.ManualUpdateWatcher[mango.Price]] = {'fake': mango.ManualUpdateWatcher(price)}
     placed_orders_container_watcher: mango.ManualUpdateWatcher[
         mango.PlacedOrdersContainer] = mango.ManualUpdateWatcher(placed_orders_container)
     inventory_watcher: mango.ManualUpdateWatcher[mango.Inventory] = mango.ManualUpdateWatcher(inventory)
     orderbook_watcher: mango.ManualUpdateWatcher[mango.OrderBook] = mango.ManualUpdateWatcher(orderbook)
 
     return mango.ModelState(order_owner, market, group_watcher,
-                            account_watcher, price_watcher, placed_orders_container_watcher,
+                            account_watcher, price_watchers, placed_orders_container_watcher,
                             inventory_watcher, orderbook_watcher)
 
 

@@ -67,7 +67,9 @@ class RatiosElement(Element):
         return RatiosElement(order_type, spread_ratios, position_size_ratios, from_bid_ask)
 
     def process(self, context: mango.Context, model_state: ModelState, orders: typing.Sequence[mango.Order]) -> typing.Sequence[mango.Order]:
-        price: mango.Price = model_state.price
+        if len(model_state.prices) > 1:  # CHKP change
+            raise NotImplementedError("This is a Chainkeepers change which was not adapted to work with ratioselement.py")
+        price: mango.Price = list(model_state.prices.values())[0]
         new_orders: typing.List[mango.Order] = []
         for counter in range(len(self.spread_ratios)):
             position_size_ratio = self.position_size_ratios[counter]
