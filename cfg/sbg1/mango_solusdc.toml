@@ -6,7 +6,7 @@ base = "common.toml"
 
 cluster_url = "https://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
 address = "DXduaJGTVVZLeTy75wDu3CkbEzsA3jFBaTHRvF4UoTyz"
-key_file = "/srv/key/mango-explorer/mu1/DXduaJGTVVZLeTy75wDu3CkbEzsA3jFBaTHRvF4UoTyz.json"
+key_file = "/srv/key/mango-explorer/sbg1/DXduaJGTVVZLeTy75wDu3CkbEzsA3jFBaTHRvF4UoTyz.json"
 watch_markets = ["SOL/USDC"]
 
 [paths]
