@@ -81,7 +81,7 @@ def cleanup(
 
 
 def override_args(cfg, args):
-    args.cluster_url = cfg.account.cluster_url
+    args.cluster_url = [cfg.account.cluster_url]
     args.account_index = 0  # index of the account to use, if more than one available
     args.confidence_interval_level = cfg.marketmaker.confidence_interval_level
     args.position_size_ratios = cfg.marketmaker.position_size_ratios

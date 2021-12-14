@@ -13,9 +13,15 @@ def test_constructor():
     account_liquidator: mango.AccountLiquidator = mango.NullAccountLiquidator()
     wallet_balancer: mango.WalletBalancer = mango.NullWalletBalancer()
     worthwhile_threshold: Decimal = Decimal("0.1")
-    actual = mango.LiquidationProcessor(context, name, account_liquidator, wallet_balancer, worthwhile_threshold)
+    actual = mango.LiquidationProcessor(
+        context,
+        name,
+        account_liquidator,
+        wallet_balancer,
+        worthwhile_threshold
+    )
     assert actual is not None
-    assert actual.logger is not None
+    assert actual._logger is not None
     assert actual.context == context
     assert actual.account_liquidator == account_liquidator
     assert actual.wallet_balancer == wallet_balancer
@@ -38,13 +44,18 @@ def test_constructor():
 #         self.liquidation_processor = liquidation_processor
 #         self.captured_group: typing.Optional[mango.Group] = None
 #         self.captured_prices: typing.Optional[typing.Sequence[mango.TokenValue]] = None
-#         self.captured_to_liquidate: typing.Optional[typing.Sequence[mango.LiquidatableReport]] = None
+#         self.captured_to_liquidate: typing.Optional[typing.Sequence[mango.LiquidatableReport]] \
+#             = None
 
 #         # This monkeypatch is a bit nasty. It would be better to make the LiquidationProcessor
 #         # a bit more test-friendly.
 #         liquidation_processor._liquidate_all = self.liquidate_capture  # type: ignore
 
-#     def liquidate_capture(self, group: mango.Group, prices: typing.Sequence[mango.TokenValue], to_liquidate: typing.Sequence[mango.LiquidatableReport]):
+#     def liquidate_capture(
+#         self, group: mango.Group,
+#         prices: typing.Sequence[mango.TokenValue],
+#         to_liquidate: typing.Sequence[mango.LiquidatableReport]
+#     ):
 #         self.captured_group = group
 #         self.captured_prices = prices
 #         self.captured_to_liquidate = to_liquidate
@@ -56,12 +67,18 @@ def test_constructor():
 #     account_liquidator: mango.AccountLiquidator = mango.NullAccountLiquidator()
 #     wallet_balancer: mango.WalletBalancer = mango.NullWalletBalancer()
 #     worthwhile_threshold: Decimal = Decimal("0.1")
-#     actual = mango.LiquidationProcessor(context, name, account_liquidator, wallet_balancer, worthwhile_threshold)
+#     actual = mango.LiquidationProcessor(
+#         context, name, account_liquidator, wallet_balancer, worthwhile_threshold)
 
 #     return LiquidateMock(actual)
 
 
-# def validate_liquidation_results(deposits: typing.Sequence[str], borrows: typing.Sequence[str], openorders: typing.Sequence[typing.Optional[mango.OpenOrders]], price_iterations: typing.Sequence[typing.Tuple[typing.Sequence[str], str, bool]]):
+# def validate_liquidation_results(
+#     deposits: typing.Sequence[str],
+#     borrows: typing.Sequence[str],
+#     openorders: typing.Sequence[typing.Optional[mango.OpenOrders]],
+#     price_iterations: typing.Sequence[typing.Tuple[typing.Sequence[str], str, bool]]
+# ):
 #     group = mock_group()
 #     capturer = capturing_liquidation_processor()
 #     margin_account = mock_margin_account(group,
@@ -77,10 +94,16 @@ def test_constructor():
 #         capturer.liquidation_processor.update_prices(group, token_prices)
 
 #         if liquidatable:
-#             assert (capturer.captured_to_liquidate is not None) and (len(capturer.captured_to_liquidate) == 1)
+#             assert (
+#                 (capturer.captured_to_liquidate is not None) and
+#                 (len(capturer.captured_to_liquidate) == 1)
+#             )
 #             assert capturer.captured_to_liquidate[0].margin_account == margin_account
 #         else:
-#             assert (capturer.captured_to_liquidate is not None) and (len(capturer.captured_to_liquidate) == 0)
+#             assert (
+#                 (capturer.captured_to_liquidate is not None) and
+#                 (len(capturer.captured_to_liquidate) == 0)
+#             )
 
 
 # def test_non_liquidatable_account():
@@ -235,11 +258,14 @@ def test_constructor():
 #     validate_liquidation_results(
 #         ["0", "0", "0", "0", "1000"],
 #         ["0", "0", "0", "190", "0"],
-#         [None, None, None, mock_open_orders(base_token_total=Decimal(9), referrer_rebate_accrued=Decimal("0.1")), None],
+#         [None, None, None, mock_open_orders(base_token_total=Decimal(9),
+#          referrer_rebate_accrued=Decimal("0.1")), None],
 #         [
 #             (
 #                 ["2000", "30000", "40", "5", "1"],
-#                 "95.1",  # The 0.1 referrer rebate is the difference between non-liquidation and iquidation.
+#                 # The 0.1 referrer rebate is the difference between
+#                 #   non-liquidation and liquidation.
+#                 "95.1",
 #                 False
 #             )
 #         ]
@@ -257,7 +283,9 @@ def test_constructor():
 #         [
 #             (
 #                 ["2000", "30000", "40", "5", "1"],
-#                 "95.1",  # 0.1 of the referrer rebate is the difference between non-liquidation and iquidation.
+#                 # 0.1 of the referrer rebate is the difference between
+#                 #  non-liquidation and liquidation.
+#                 "95.1",
 #                 False
 #             )
 #         ]

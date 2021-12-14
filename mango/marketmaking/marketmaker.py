@@ -70,7 +70,7 @@ class MarketMaker:
             # desired_orders = self.desired_orders_chain.process(context, model_state)
             existing_orders = self.market_operations.load_my_orders()
             self.model_values_graph.update_values(model_state, existing_orders)
- 
+
             desired_orders = self.desired_orders_chain.process(
                 context,
                 model_state
@@ -130,7 +130,7 @@ Ignore:
 
             # CHKP additions
             self.pulse_complete.on_next(datetime.now())
-            self.logger.info('Pulsing took %s seconds', time.time() - time_pulse_start)
+            self._logger.info('Pulsing took %s seconds', time.time() - time_pulse_start)
 
             self.pulse_complete.on_next(datetime.now())
         except (mango.RateLimitException, mango.NodeIsBehindException, mango.BlockhashNotFoundException, mango.FailedToFetchBlockhashException) as common_exception:
