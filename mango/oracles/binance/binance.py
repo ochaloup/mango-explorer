@@ -78,7 +78,7 @@ class BinanceOracle(Oracle):
             = SupportedOracleFeature.MID_PRICE | SupportedOracleFeature.TOP_BID_AND_OFFER
         self.source: OracleSource = OracleSource("Binance", name, features, market)
 
-    def _fetch_price(self, context: Context, symbol: str) -> Price:
+    def _fetch_price(self, _: Context, symbol: str) -> typing.Tuple[Decimal, Decimal, Decimal]:
         result = _binance_get_from_url(symbol)
 
         if self.market.symbol in MSOL_SYMBOLS:
@@ -113,7 +113,7 @@ class BinanceOracle(Oracle):
             BinanceOracleConfidence
         )
 
-    def to_streaming_observable(self, _: Context) -> rx.core.Observable:
+    def to_streaming_observable(self, context: Context) -> rx.core.Observable:
         """
         See binance websocket docs
         https://binance-docs.github.io/apidocs/spot/en/#live-subscribing-unsubscribing-to-streams
@@ -135,6 +135,8 @@ class BinanceOracle(Oracle):
                 )
                 self.logger.info(f'Received price: {price}')
                 subject.on_next(price)
+
+                self._check_quality_of_price_update(price, context)
 
         ws: ReconnectingWebsocket = ReconnectingWebsocket(
             f'wss://stream.binance.com:9443/ws/{self.binance_symbol.lower()}@bookTicker',

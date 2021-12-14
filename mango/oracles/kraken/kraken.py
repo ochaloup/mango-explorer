@@ -95,7 +95,7 @@ class KrakenOracle(Oracle):
             = SupportedOracleFeature.MID_PRICE | SupportedOracleFeature.TOP_BID_AND_OFFER
         self.source: OracleSource = OracleSource("Kraken", name, features, market)
 
-    def _fetch_price(self, context: Context, symbol) -> Price:
+    def _fetch_price(self, context: Context, symbol) -> typing.Tuple[Decimal, Decimal, Decimal]:
 
         result = _kraken_get_from_url(symbol)
 
@@ -195,6 +195,8 @@ class KrakenOracle(Oracle):
                     KrakenOracleConfidence
                 )
                 subject.on_next(price)
+
+                self._check_quality_of_price_update(price, context)
 
         ws: ReconnectingWebsocket = ReconnectingWebsocket(
             "wss://ws.kraken.com/",

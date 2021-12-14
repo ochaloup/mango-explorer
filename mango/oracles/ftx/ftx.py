@@ -125,7 +125,7 @@ class FtxOracle(Oracle):
             = SupportedOracleFeature.MID_PRICE | SupportedOracleFeature.TOP_BID_AND_OFFER
         self.source: OracleSource = OracleSource("FTX", name, features, market)
 
-    def _fetch_price(self, context: Context, symbol) -> Price:
+    def _fetch_price(self, context: Context, symbol) -> typing.Tuple[Decimal, Decimal, Decimal]:
 
         result = _ftx_get_from_url(symbol)
 
@@ -182,6 +182,8 @@ class FtxOracle(Oracle):
                     FtxOracleConfidence
                 )
                 subject.on_next(price)
+
+                self._check_quality_of_price_update(price, context)
 
         ws: ReconnectingWebsocket = ReconnectingWebsocket(
             "wss://ftx.com/ws/",

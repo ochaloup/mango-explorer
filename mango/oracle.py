@@ -19,7 +19,7 @@ import logging
 import rx
 import typing
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from .context import Context
@@ -115,6 +115,8 @@ class Oracle(metaclass=abc.ABCMeta):
         self.name = name
         self.market = market
 
+        self._latest_wss_data_timestamp = datetime.now()
+
     @property
     def symbol(self) -> str:
         return self.market.symbol
@@ -129,6 +131,35 @@ class Oracle(metaclass=abc.ABCMeta):
 
     def __str__(self) -> str:
         return f"« Oracle {self.name} [{self.market.symbol}] »"
+
+    # CHKP addition
+    def _check_quality_of_price_update(self, price: Price, context: Context) -> None:
+        # validate wss mid price against http api
+        # do this every few seconds
+        # also check that the updates are not too sparse
+        time_since_latest_check = datetime.now() - self._latest_wss_data_timestamp
+        if time_since_latest_check > timedelta(seconds=5):
+            self._latest_wss_data_timestamp = datetime.now()
+
+            http_price = self.fetch_price(context).mid_price
+            diff = (price.mid_price - http_price) / http_price
+            extra = dict(
+                http_price=http_price,
+                wss_price=price.mid_price,
+                relative_diff=diff,
+                time_since_latest_check=time_since_latest_check
+            )
+            if Decimal('-0.003') < diff < Decimal('0.003'):
+                self.logger.warning(
+                    f'Price from wss and http deviate too much: {diff}', extra=extra
+                )
+            else:
+                self.logger.info(f'Price from wss and http are similar: {diff}', extra=extra)
+        elif time_since_latest_check > timedelta(seconds=5):
+            self.logger.warning(
+                'Price updates are too sparse.',
+                extra=dict(time_since_latest_check=time_since_latest_check)
+            )
 
     def __repr__(self) -> str:
         return f"{self}"
