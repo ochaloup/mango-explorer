@@ -21,7 +21,7 @@ min_quote_size = "100"
 spread_ratio = "0.0015"
 spread_narrowing_coef = "0.5"
 position_size_ratios = ["0.3", "0.3"]
-oracle_providers = ["ftx", "kraken"]
+oracle_providers = ["ftx", "binance"]
 # price_weights determines the weight of oracles in calculating fair price
 price_weights = ["0.25", "0.25"]
 existing_order_price_tolerance = "0.0005"
