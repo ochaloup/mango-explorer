@@ -4,14 +4,14 @@ RUN sh -c "$(curl -sSfL https://release.solana.com/v1.8.4/install)"
 
 RUN apt-get update && apt-get -y install bc curl zlib1g-dev
 
+RUN pip install --upgrade pip && pip --no-cache-dir install poetry
+
 RUN mkdir /app 
 COPY ./pyproject.toml ./poetry.lock ./
 
 WORKDIR /app
 ENV PYTHONPATH=${PYTHONPATH}:/app
 ENV PATH="/app/bin:${PATH}:/app/scripts:/root/.local/share/solana/install/active_release/bin"
-
-RUN pip install --upgrade pip && pip --no-cache-dir install poetry
 
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-dev --no-root
