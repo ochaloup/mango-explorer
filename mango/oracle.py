@@ -151,10 +151,13 @@ class Oracle(metaclass=abc.ABCMeta):
             )
             if Decimal('-0.003') < diff < Decimal('0.003'):
                 self.logger.warning(
-                    f'Price from wss and http deviate too much: {diff}', extra=extra
+                    f'Price from wss and http deviate too much: {diff}, {extra}', extra=extra
                 )
             else:
-                self.logger.info(f'Price from wss and http are similar: {diff}', extra=extra)
+                self.logger.info(
+                    f'Price from wss and http are similar: {diff}, {extra}',
+                    extra=extra
+                )
         elif time_since_latest_check > timedelta(seconds=60):
             self.logger.warning(
                 'Price updates are too sparse.',
