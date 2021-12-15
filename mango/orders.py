@@ -240,7 +240,7 @@ class OrderBook:
     def top_bid(self) -> typing.Optional[Order]:
         if self.bids and len(self.bids) > 0:
             # Top-of-book is always at index 0 for us.
-            return self.bids[0]
+            return self.bids[-1]
         return None
 
     # The top ask is the lowest price someone is willing to pay to SELL
