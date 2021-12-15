@@ -155,7 +155,7 @@ class Oracle(metaclass=abc.ABCMeta):
                 )
             else:
                 self.logger.info(f'Price from wss and http are similar: {diff}', extra=extra)
-        elif time_since_latest_check > timedelta(seconds=5):
+        elif time_since_latest_check > timedelta(seconds=60):
             self.logger.warning(
                 'Price updates are too sparse.',
                 extra=dict(time_since_latest_check=time_since_latest_check)
