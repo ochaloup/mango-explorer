@@ -219,17 +219,25 @@ class Order(typing.NamedTuple):
 
 
 class OrderBook:
+    bids: typing.Sequence[Order] = []
+    asks: typing.Sequence[Order] = []
+
     def __init__(self, symbol: str, lot_size_converter: LotSizeConverter, bids: typing.Sequence[Order], asks: typing.Sequence[Order]) -> None:
         self.symbol: str = symbol
         self.__lot_size_converter: LotSizeConverter = lot_size_converter
 
-        # Sort bids high to low, so best bid is at index 0
+        self.update_bids(bids)
+        self.update_asks(asks)
+
+    def update_bids(self, bids: typing.Sequence[Order]):
+        """ Sort bids high to low, so best bid is at index 0 """
         bids_list: typing.List[Order] = list(bids)
         bids_list.sort(key=lambda order: order.id, reverse=True)
         # bids_list.sort(key=lambda order: order.price, reverse=True)
         self.bids: typing.Sequence[Order] = bids_list
 
-        # Sort bids low to high, so best bid is at index 0
+    def update_asks(self, asks: typing.Sequence[Order]):
+        """ Sets asks low to high, so best ask is at index 0"""
         asks_list: typing.List[Order] = list(asks)
         asks_list.sort(key=lambda order: order.id)
         # asks_list.sort(key=lambda order: order.price)
@@ -240,7 +248,7 @@ class OrderBook:
     def top_bid(self) -> typing.Optional[Order]:
         if self.bids and len(self.bids) > 0:
             # Top-of-book is always at index 0 for us.
-            return self.bids[-1]
+            return self.bids[0]
         return None
 
     # The top ask is the lowest price someone is willing to pay to SELL

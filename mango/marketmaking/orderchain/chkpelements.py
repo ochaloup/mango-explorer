@@ -12,7 +12,7 @@ def compute_pcd(limit, model_state):
 
     bid_sum_price = 0
     bid_sum_quantity = 0
-    for bid in reversed(model_state.bids):
+    for bid in model_state.bids:
 
         quantity = max(0, min(bid.quantity, limit - bid_sum_quantity))
         bid_sum_price += quantity * bid.price
