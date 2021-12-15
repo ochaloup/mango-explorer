@@ -150,17 +150,17 @@ class Oracle(metaclass=abc.ABCMeta):
                 time_since_latest_check=time_since_latest_check
             )
             if time_since_latest_check > timedelta(seconds=60):
-                self.logger.warning(
+                self._logger.warning(
                     f'Price updates are too sparse. {extra}',
                     extra=dict(time_since_latest_check=time_since_latest_check)
                 )
             if Decimal('-0.003') < diff < Decimal('0.003'):
-                self.logger.info(
+                self._logger.info(
                     f'Price from wss and http are similar: {diff}, {extra}',
                     extra=extra
                 )
             else:
-                self.logger.warning(
+                self._logger.warning(
                     f'Price from wss and http deviate too much: {diff}, {extra}', extra=extra
                 )
 
@@ -198,7 +198,7 @@ class OracleProvider(metaclass=abc.ABCMeta):
 #
 class AsyncOracle(metaclass=abc.ABCMeta):
     def __init__(self, name: str, market: Market) -> None:
-        self.logger: logging.Logger = logging.getLogger(self.__class__.__name__)
+        self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
         self.name = name
         self.market = market
 
@@ -213,5 +213,3 @@ class AsyncOracle(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     async def to_streaming_observable(self, context: Context) -> rx.core.Observable:
         raise NotImplementedError("Oracle.fetch_price() is not implemented on the base type.")
-
-
