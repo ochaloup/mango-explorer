@@ -105,6 +105,7 @@ def override_args(cfg, args):
     args.pulse_interval = cfg.marketmaker.poll_interval_seconds
     args.event_queue_poll_interval = cfg.marketmaker.poll_interval_seconds
     args.max_price_slippage_factor = Decimal("0.05")
+    args.stale_data_pause_before_retry = cfg.marketmaker.stale_data_pauses_before_retry
 
 
 def setup_logging(args):

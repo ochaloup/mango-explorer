@@ -124,7 +124,8 @@ def main(args):
 
     cfg = load_configuration(args.config[0])
     heartbeat_init(cfg.paths.account_balances_heartbeat)
-    args.cluster_url = cfg.account.cluster_url
+    args.cluster_url = [cfg.account.cluster_url]
+    args.stale_data_pause_before_retry = cfg.marketmaker.stale_data_pauses_before_retry
     context: mango.Context = mango.ContextBuilder.from_command_line_parameters(args)
     address = cfg.account.address
     sink = make_db_sink(cfg.database)

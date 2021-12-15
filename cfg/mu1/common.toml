@@ -37,3 +37,4 @@ existing_order_tolerance = "0.001"
 confidence_interval_level = []
 leverage = 0
 poll_interval_seconds = 5
+stale_data_pauses_before_retry = 2

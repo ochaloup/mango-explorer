@@ -30,6 +30,7 @@ LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.DEBUG)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
+
 def parse_args(args=None):
 
     parser = argparse.ArgumentParser(description='Periodically collects oracle prices.')
@@ -197,7 +198,8 @@ def main(args: argparse.Namespace) -> None:
     try:
         cfg = load_configuration(args.config[0])
         heartbeat_init(cfg.paths.price_collector_heartbeat)
-        args.cluster_url = cfg.account.cluster_url
+        args.cluster_url = [cfg.account.cluster_url]
+        args.stale_data_pause_before_retry = cfg.marketmaker.stale_data_pauses_before_retry
         context = mango.ContextBuilder.from_command_line_parameters(args)
 
         def get_oracle(

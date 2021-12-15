@@ -68,6 +68,7 @@ class MarketMakerConfiguration:
     existing_order_tolerance: Decimal
     confidence_interval_level: List[Decimal]
     leverage: Decimal
+    stale_data_pauses_before_retry: Decimal = None
     spread_narrowing_coef: Decimal = 0
     price_center_volume: Decimal = 1000
     existing_order_price_tolerance: Decimal = None
@@ -88,13 +89,11 @@ class MarketMakerConfiguration:
             'existing_order_tolerance'
         )
         self.existing_order_price_tolerance = wrap_decimal(
-            self.existing_order_price_tolerance
-            or self.existing_order_tolerance,
+            self.existing_order_price_tolerance or self.existing_order_tolerance,
             'existing_order_price_tolerance'
         )
         self.existing_order_quanity_tolerance = wrap_decimal(
-            self.existing_order_quantity_tolerance
-            or self.existing_order_tolerance,
+            self.existing_order_quantity_tolerance or self.existing_order_tolerance,
             'existing_order_quantity_tolerance'
         )
 
