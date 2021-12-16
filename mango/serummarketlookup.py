@@ -121,7 +121,7 @@ class SerumMarketLookup(MarketLookup):
 
         elif quote.symbol == "SOL":
             if "serumV3Sol" not in base_data["extensions"]:
-                self.logger.warning(f"No SOL market found for base token '{base.symbol}'.")
+                self._logger.warning(f"No SOL market found for base token '{base.symbol}'.")
                 return None
 
             market_address_string = base_data["extensions"]["serumV3Sol"]
