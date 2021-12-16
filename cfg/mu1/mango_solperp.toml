@@ -24,6 +24,7 @@ position_size_ratios = ["0.4", "0.4"]
 oracle_providers = ["pyth", "ftx"]
 # price_weights determines the weight of oracles in calculating fair price
 price_weights = ["0.25", "0.25"]
+ewma_halflife = 100
 existing_order_price_tolerance = "0.0005"
 existing_order_quantity_tolerance = "0.3"
 confidence_interval_level = [1]

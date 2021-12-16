@@ -7,18 +7,28 @@ from typing import Dict
 from decimal import Decimal
 import logging
 
+from mango import Price
 from mango.types_ import Configuration
 from mango.modelstate import ModelState, ModelStateValues
 from mango.marketmaking.valuemodel import ValueModel
+from mango.marketmaking.ewma import EWMA
 
 
 def calculate_aggregate_price(
         weights: Dict[str, Decimal],
-        model_state: ModelState
+        oracle_prices: Dict[str, Price],
+        price_center_ewma: EWMA,
+        prices_oracle_ewma: Dict[str, EWMA]
 ) -> Decimal:
+    """
+    Calculates
+    result = alpha_1(FTX - (EWMA(FTX) - EWMA(PC))) + alpha_2(KRK - (EWMA(KRK) - EWMA(PC)) +
+    """
     return sum(
-        price.mid_price * weights[source_name]
-        for source_name, price in model_state.prices.items()
+        weights[source_name] * (
+            price.mid_price - (prices_oracle_ewma[source_name].latest - price_center_ewma.latest)
+        )
+        for source_name, price in oracle_prices.items()
     )
 
 
@@ -60,16 +70,35 @@ class FairPriceModel(ValueModel[Configuration]):
 
         self.price_params = dict(zip(cfg.oracle_providers, cfg.price_weights))
         self.pcd_coef = 1 - sum(cfg.price_weights)
+        if self.pcd_coef > 1 or self.pcd_coef < 0:
+            raise ValueError(
+                'Incorrect values in cfg.price_weights. Their sum is not in [0,1] interval'
+            )
+
+        self.price_center_ewma = EWMA(cfg.ewma_com)
+        self.prices_oracle_ewma = {
+            provider: EWMA(cfg.ewma_com)
+            for provider in cfg.oracle_providers
+        }
 
     def eval(self, model_state: ModelState):
+        price_center = compute_pcd(self.cfg.price_center_volume, model_state)
+        self.price_center_ewma.update(price_center)
+
+        for source_name, price in model_state.prices.items():
+            self.prices_oracle_ewma[source_name].update(price.mid_price)
 
         price_aggregated = calculate_aggregate_price(
-            self.price_params,
-            model_state
+            weights=self.price_params,
+            oracle_prices=model_state.prices,
+            price_center_ewma=self.price_center_ewma,
+            prices_oracle_ewma=self.prices_oracle_ewma,
         )
 
-        price_center = compute_pcd(self.cfg.price_center_volume, model_state)
-
+        # Originally in the email thread we had
+        # FP = EWMA(PC) + FTX - EWMA(FTX)
+        # respectively
+        # FP = alpha_1(FTX - (EWMA(FTX) - EWMA(PC))) + alpha_2(KRK - (EWMA(KRK) - EWMA(PC))
         fair_price = price_aggregated + self.pcd_coef * price_center
 
         self.logger.info('Current aggregated price: %.4f', price_aggregated)

@@ -74,6 +74,7 @@ class MarketMakerConfiguration:
     existing_order_price_tolerance: Decimal = None
     existing_order_quantity_tolerance: Decimal = None
     price_weights: List[Decimal] = field(default_factory=list)
+    ewma_halflife: Decimal = Decimal('0')
     poll_interval_seconds: int = 10
     min_price_increment_ratio: Decimal = "0.00005"
 
@@ -108,6 +109,8 @@ class MarketMakerConfiguration:
             lambda x: wrap_decimal(x, 'price_weights'),
             self.price_weights
         ))
+
+        self.ewma_halflife = wrap_decimal(self.ewma_halflife, 'ewma_halflife')
 
         self.spread_narrowing_coef = wrap_decimal(
             self.spread_narrowing_coef,
