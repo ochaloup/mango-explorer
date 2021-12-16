@@ -125,8 +125,14 @@ Ignore:
                 redeem = self.market_instruction_builder.build_redeem_instructions()
 
             # Don't bother if we have no orders to change
+
+            # CHKP - always settle, otherwise we don't know how to quote since
+            # the inverntory is messed up.
             if len(cancellations.instructions) + len(place_orders.instructions) > 0:
                 (payer + cancellations + place_orders + crank + settle + redeem).execute(context)
+
+            else:
+                (payer + settle).execute(context)
 
             # CHKP additions
             self.pulse_complete.on_next(datetime.now())
