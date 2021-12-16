@@ -4,12 +4,12 @@ base = "common.toml"
 
 [account]
 
-cluster_url = "https://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
-cluster_url_wss = "wss://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
+#cluster_url = "https://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
+#cluster_url_wss = "wss://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
 #cluster_url = "https://ssc-dao.genesysgo.net/"
 #cluster_url_wss = "wss://ssc-dao.genesysgo.net"
-#cluster_url = 'http://solana-rpc.rbf.systems:8899/'
-#cluster_url_wss = 'wss://solana-rpc.rbf.systems:8900/'
+cluster_url = 'http://solana-rpc.rbf.systems:8899/'
+cluster_url_wss = 'ws://solana-rpc.rbf.systems:8900'
 
 address = "G8kHCcbsHL5hwGYWeGJNPxti65kW6PKiiVKoKKUfHbch"
 key_file = "/srv/key/mango-explorer/mu1/G8kHCcbsHL5hwGYWeGJNPxti65kW6PKiiVKoKKUfHbch.json"
