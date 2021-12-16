@@ -69,23 +69,21 @@ def _ftx_get_all_from_url_cached(url: str) -> typing.Dict:
 
 
 def _ftx_get_from_url(symbol: str) -> typing.Dict:
-    # url = f"https://ftx.com/api/markets/{symbol}"
+    # specific symbol can be also queried with "https://ftx.com/api/markets/{symbol}"
     source_uncached_url = "https://ftx.com/api/markets"
-    url = "http://127.0.0.1:8082/api/markets"
 
-    all_response_values = _ftx_get_all_from_url(url)
-    if ("success" not in all_response_values) or (not all_response_values["success"]):
-        LOGGER.info('Using uncached url to query ftx prices.')
-        all_response_values = _ftx_get_all_from_url_cached(source_uncached_url)
+    LOGGER.info('Using globally uncached (locally cached) url to query ftx prices.')
+    all_response_values = _ftx_get_all_from_url_cached(source_uncached_url)
 
     if ("success" not in all_response_values) or (not all_response_values["success"]):
-        raise Exception(f"Failed to get from FTX URL: {url}/{symbol}")
+        raise Exception(f"Failed to get from FTX URL: {source_uncached_url}/{symbol}")
 
     response_values = [r for r in all_response_values['result'] if r['name'] == symbol.upper()]
 
     if not response_values:
         raise Exception(
-            f"Failed to get symbol {symbol} from FTX URL: {url}/{symbol} - {response_values}"
+            f"Failed to get symbol {symbol} from FTX URL:"
+            f" {source_uncached_url}/{symbol} - {response_values}"
         )
     return response_values[0]
 
