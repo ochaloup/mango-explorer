@@ -60,7 +60,7 @@ def build_group_watcher(context: Context, manager: WebSocketSubscriptionManager,
     latest_group_observer = LatestItemObserverSubscriber[Group](group)
     group_subscription.publisher.subscribe(latest_group_observer)
     # CHKP TODO - health_check should reconnect, but does not.  Investigate!
-    health_check.add("group_subscription", group_subscription.publisher)
+    # health_check.add("group_subscription", group_subscription.publisher)
     return latest_group_observer
 
 
