@@ -829,7 +829,7 @@ sqlcipher = ["sqlcipher3-binary"]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -970,7 +970,7 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "62c01002fffc76a1e6a1160b9c9261eb5059e352643f9f832f20fab98757acfe"
+content-hash = "317d9eacfaea109ec18121b8fd28c3e44376b35f8e28956584dff3e83ef33da7"
 
 [metadata.files]
 anyio = [
