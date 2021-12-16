@@ -4,7 +4,7 @@ services:
     build: {context: ../marinade-anchor, target: builder}
     container_name: marinade-anchor-builder
   shell:
-    build: {context: ., target: devel}
+    build: {context: ., target: standard}
     network_mode: host
     stdin_open: true # docker run -i
     tty: true        # docker run -t
