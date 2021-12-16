@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import mango
 from mango.modelstate import ModelState
-from mango.types_ import Configuration
+from mango.types_ import Configuration, MarketMakerConfiguration
 from mango.marketmaking.orderchain.element import Element
 
 
@@ -51,7 +51,7 @@ class LeveragedFixedRatiosElement(Element):
 
     def __init__(
             self,
-            cfg: Configuration,
+            cfg: MarketMakerConfiguration,
             is_perp: bool,
             order_type: mango.OrderType = mango.OrderType.POST_ONLY,
     ):
@@ -127,7 +127,7 @@ class LimitSpreadNarrowingElement(Element):
     PKB is the original suggested price for the quote.  Mirror for ASK.
     """
 
-    def __init__(self, cfg: Configuration):
+    def __init__(self, cfg: MarketMakerConfiguration):
         super().__init__()
         self.cfg = cfg
 
