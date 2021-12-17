@@ -19,7 +19,7 @@ account_balances_heartbeat = "run/balances_collector_mango_solperp/heartbeat"
 
 pair = "SOL-PERP"
 min_quote_size = "2"
-spread_ratio = "0.0008"
+spread_ratio = "0.0015"
 position_size_ratios = ["0.4", "0.4"]
 oracle_providers = ["pyth", "ftx"]
 # price_weights determines the weight of oracles in calculating fair price
