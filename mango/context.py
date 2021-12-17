@@ -24,8 +24,10 @@ from rx.scheduler.threadpoolscheduler import ThreadPoolScheduler
 from solana.publickey import PublicKey
 from solana.rpc.commitment import Commitment
 
+
 from .client import BetterClient
 from .constants import MangoConstants
+from .datasaver.datasaver import DataSaver
 from .instructionreporter import InstructionReporter, CompoundInstructionReporter
 from .instrumentlookup import InstrumentLookup
 from .marketlookup import MarketLookup
@@ -42,7 +44,7 @@ class Context:
                  stale_data_pauses_before_retry: typing.Sequence[float], mango_program_address: PublicKey,
                  serum_program_address: PublicKey, group_name: str, group_address: PublicKey,
                  gma_chunk_size: Decimal, gma_chunk_pause: Decimal, instrument_lookup: InstrumentLookup,
-                 market_lookup: MarketLookup) -> None:
+                 market_lookup: MarketLookup, data_saver_path: str = None) -> None:
         self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
         self.name: str = name
         instruction_reporter: InstructionReporter = CompoundInstructionReporter.from_addresses(
@@ -57,6 +59,11 @@ class Context:
         self.gma_chunk_pause: Decimal = gma_chunk_pause
         self.instrument_lookup: InstrumentLookup = instrument_lookup
         self.market_lookup: MarketLookup = market_lookup
+
+        self.data_saver: typing.Optional[DataSaver] = None
+        if data_saver_path is not None:
+            print(f">>>>>>>>>>>>>>>>>>>>>> having path of {data_saver_path}")
+            self.data_saver: DataSaver = DataSaver(data_saver_path)
 
         self.ping_interval: int = 10
 

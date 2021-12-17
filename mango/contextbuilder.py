@@ -84,6 +84,7 @@ class ContextBuilder:
                             help="Maximum number of addresses to send in a single call to getMultipleAccounts()")
         parser.add_argument("--gma-chunk-pause", type=Decimal, default=None,
                             help="number of seconds to pause between successive getMultipleAccounts() calls to avoid rate limiting")
+        parser.add_argument('--data-saver', type=str, default=None, help='Where to save data from watchers')
 
         parser.add_argument("--token-data-file", type=str, default=SPLTokenLookup.DefaultDataFilepath,
                             help="data file that contains token symbols, names, mints and decimals (format is same as https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json)")
@@ -112,6 +113,7 @@ class ContextBuilder:
         gma_chunk_size: typing.Optional[Decimal] = args.gma_chunk_size
         gma_chunk_pause: typing.Optional[Decimal] = args.gma_chunk_pause
         token_filename: str = args.token_data_file
+        data_saver: typing.Optional[str] = args.data_saver
 
         # Do this here so build() only ever has to handle the sequence of retry times. (It gets messy
         # passing around the sequnce *plus* the data to reconstruct it for build().)
@@ -126,7 +128,7 @@ class ContextBuilder:
                                                 actual_stale_data_pauses_before_retry,
                                                 group_name, group_address, mango_program_address,
                                                 serum_program_address, gma_chunk_size, gma_chunk_pause,
-                                                token_filename)
+                                                token_filename, data_saver)
         logging.debug(f"{context}")
 
         return context
@@ -143,7 +145,7 @@ class ContextBuilder:
                                     context.client.stale_data_pauses_before_retry,
                                     group_name, None, None, None,
                                     context.gma_chunk_size, context.gma_chunk_pause,
-                                    SPLTokenLookup.DefaultDataFilepath)
+                                    SPLTokenLookup.DefaultDataFilepath, context.data_saver)
 
     @staticmethod
     def forced_to_devnet(context: Context) -> Context:
@@ -188,7 +190,7 @@ class ContextBuilder:
               group_name: typing.Optional[str] = None, group_address: typing.Optional[PublicKey] = None,
               program_address: typing.Optional[PublicKey] = None, serum_program_address: typing.Optional[PublicKey] = None,
               gma_chunk_size: typing.Optional[Decimal] = None, gma_chunk_pause: typing.Optional[Decimal] = None,
-              token_filename: str = SPLTokenLookup.DefaultDataFilepath) -> "Context":
+              token_filename: str = SPLTokenLookup.DefaultDataFilepath, data_saver: str = typing.Optional[str]) -> "Context":
         def __public_key_or_none(address: typing.Optional[str]) -> typing.Optional[PublicKey]:
             if address is not None and address != "":
                 return PublicKey(address)
@@ -268,4 +270,4 @@ class ContextBuilder:
             all_market_lookup = CompoundMarketLookup([ids_json_market_lookup, devnet_serum_market_lookup])
         market_lookup: MarketLookup = all_market_lookup
 
-        return Context(actual_name, actual_cluster, actual_cluster_urls, actual_skip_preflight, actual_commitment, actual_encoding, actual_blockhash_cache_duration, actual_stale_data_pauses_before_retry, actual_program_address, actual_serum_program_address, actual_group_name, actual_group_address, actual_gma_chunk_size, actual_gma_chunk_pause, instrument_lookup, market_lookup)
+        return Context(actual_name, actual_cluster, actual_cluster_urls, actual_skip_preflight, actual_commitment, actual_encoding, actual_blockhash_cache_duration, actual_stale_data_pauses_before_retry, actual_program_address, actual_serum_program_address, actual_group_name, actual_group_address, actual_gma_chunk_size, actual_gma_chunk_pause, instrument_lookup, market_lookup, data_saver)

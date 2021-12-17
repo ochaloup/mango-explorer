@@ -245,6 +245,7 @@ def build_orderbook_watcher(context: Context, manager: WebSocketSubscriptionMana
     orderbook_observer = LatestItemObserverSubscriber[OrderBook](initial_orderbook)
 
     bids_subscription.publisher.subscribe(orderbook_observer)
+    bids_subscription.publisher.subscribe(context.data_saver)
     asks_subscription.publisher.subscribe(orderbook_observer)
     health_check.add("orderbook_bids_subscription", bids_subscription.publisher)
     health_check.add("orderbook_asks_subscription", asks_subscription.publisher)

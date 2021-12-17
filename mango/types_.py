@@ -75,6 +75,7 @@ class MarketMakerConfiguration:
     ewma_halflife: Decimal = Decimal('0')
     poll_interval_seconds: int = 10
     min_price_increment_ratio: Decimal = "0.00005"
+    data_saver: Optional[str] = None
 
     def __post_init__(self):
         self.min_quote_size = wrap_decimal(self.min_quote_size, 'min_quote_size')
