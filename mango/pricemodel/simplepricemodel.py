@@ -56,7 +56,7 @@ def compute_pcd(limit: Decimal, model_state: ModelState):
         if ask_sum_quantity >= limit:
             break
 
-    price_center = (bid_sum_price + ask_sum_price) / (2 * limit)
+    price_center = (bid_sum_price + ask_sum_price) / (bid_sum_quantity + ask_sum_quantity)
 
     return price_center
 
@@ -75,9 +75,9 @@ class FairPriceModel(ValueModel[Configuration]):
                 'Incorrect values in cfg.price_weights. Their sum is not in [0,1] interval'
             )
 
-        self.price_center_ewma = EWMA(cfg.ewma_com)
+        self.price_center_ewma = EWMA(cfg.ewma_halflife)
         self.prices_oracle_ewma = {
-            provider: EWMA(cfg.ewma_com)
+            provider: EWMA(cfg.ewma_halflife)
             for provider in cfg.oracle_providers
         }
 
@@ -101,7 +101,11 @@ class FairPriceModel(ValueModel[Configuration]):
         # FP = alpha_1(FTX - (EWMA(FTX) - EWMA(PC))) + alpha_2(KRK - (EWMA(KRK) - EWMA(PC))
         fair_price = price_aggregated + self.pcd_coef * price_center
 
-        self.logger.info('Current aggregated price: %.4f', price_aggregated)
+        # PA = price aggregated, PC = price center
+        self.logger.info(
+            'Current fair price consists of PC: %.4f and PA: %.4f with PC coef: %.4f',
+            price_center, price_aggregated, self.pcd_coef
+        )
         self.logger.info(
             'Book prices bid: %.4f, center: %.4f, ask: %.4f',
             model_state.top_bid.price,
