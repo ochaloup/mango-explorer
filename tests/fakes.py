@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import construct
 import datetime
 import mango
