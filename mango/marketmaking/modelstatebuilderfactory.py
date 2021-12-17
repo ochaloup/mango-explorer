@@ -141,7 +141,7 @@ def _websocket_model_state_builder_factory(cfg: Configuration,
         )
         for provider_name in oracles
     }
-    # 
+    #
     # price_disposable = price_feed.subscribe(latest_price_observer)
     # disposer.add_disposable(price_disposable)
     # health_check.add("price_subscription", price_feed)
@@ -200,6 +200,7 @@ def _websocket_model_state_builder_factory(cfg: Configuration,
     else:
         raise Exception(f"Could not determine type of market {market.symbol}")
 
+    print(f'>>>>>>>>>>>>>>>>>> {market}')
     model_state = ModelState(order_owner, market, group_watcher, latest_account_observer,
                              latest_price_observers, latest_open_orders_observer,
                              inventory_watcher, latest_orderbook_watcher)
