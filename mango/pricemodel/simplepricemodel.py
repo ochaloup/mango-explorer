@@ -104,7 +104,7 @@ class FairPriceModel(ValueModel[Configuration]):
         # PA = price aggregated, PC = price center
         self.logger.info(
             'Current fair price consists of PC: %.4f and PA: %.4f with PC coef: %.4f',
-            price_center, price_aggregated, self.pcd_coef
+            price_center, price_aggregated / (1 - self.pcd_coef), self.pcd_coef
         )
         self.logger.info(
             'Book prices bid: %.4f, center: %.4f, ask: %.4f',
