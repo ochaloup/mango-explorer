@@ -28,5 +28,5 @@ ewma_halflife = 100
 existing_order_price_tolerance = "0.0005"
 existing_order_quantity_tolerance = "0.3"
 confidence_interval_level = [1]
-leverage = "5"
+leverage = "1"
 poll_interval_seconds = 5
