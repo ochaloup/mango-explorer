@@ -87,6 +87,9 @@ class FairPriceModel(ValueModel[Configuration]):
 
         for source_name, price in model_state.prices.items():
             self.prices_oracle_ewma[source_name].update(price.mid_price)
+        self.logger.info('Oracle prices:', extra=dict(
+            oracle_prices={name: price.mid_price for name, price in model_state.prices.items()}
+        ))
 
         price_aggregated = calculate_aggregate_price(
             weights=self.price_params,
