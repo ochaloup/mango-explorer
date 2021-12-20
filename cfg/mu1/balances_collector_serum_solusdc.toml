@@ -10,7 +10,7 @@ key_file = "/srv/key/mango-explorer/mu1/G8kHCcbsHL5hwGYWeGJNPxti65kW6PKiiVKoKKUf
 
 [paths]
 
-account_balances_heartbeat = "run/balances_collector_mango_copeusdc/heartbeat"
+account_balances_heartbeat = "run/balances_collector_serum_solusdc/heartbeat"
 
 [balance_collector]
 

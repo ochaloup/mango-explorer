@@ -11,7 +11,7 @@ key_file = "/srv/key/mango-explorer/mu1/DXduaJGTVVZLeTy75wDu3CkbEzsA3jFBaTHRvF4U
 
 [paths]
 
-account_balances_heartbeat = "run/balances_collector_mango_copeusdc/heartbeat"
+account_balances_heartbeat = "run/balances_collector_mango_solusdc/heartbeat"
 
 [balance_collector]
 
