@@ -84,11 +84,18 @@ class FairPriceModel(ValueModel[Configuration]):
     def eval(self, model_state: ModelState):
         price_center = compute_pcd(self.cfg.price_center_volume, model_state)
         self.price_center_ewma.update(price_center)
+        self.logger.info(
+            'price center is:',
+            extra=dict(price_center=price_center, ewma_center=self.price_center_ewma.latest)
+        )
 
         for source_name, price in model_state.prices.items():
             self.prices_oracle_ewma[source_name].update(price.mid_price)
         self.logger.info('Oracle prices:', extra=dict(
-            oracle_prices={name: price.mid_price for name, price in model_state.prices.items()}
+            oracle_prices={name: price.mid_price for name, price in model_state.prices.items()},
+            oracle_prices_ewma={
+                name: ewma.latest for name, ewma in self.prices_oracle_ewma.items()
+            },
         ))
 
         price_aggregated = calculate_aggregate_price(
@@ -97,6 +104,7 @@ class FairPriceModel(ValueModel[Configuration]):
             price_center_ewma=self.price_center_ewma,
             prices_oracle_ewma=self.prices_oracle_ewma,
         )
+        self.logger.info('price aggregated is:', extra=dict(price_aggregated=price_aggregated))
 
         # Originally in the email thread we had
         # FP = EWMA(PC) + FTX - EWMA(FTX)
