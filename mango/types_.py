@@ -37,15 +37,13 @@ class DatabaseConfiguration:
 
 
 @dataclass
-class AccountConfiguration:
+class SolanaConfiguration:
     cluster_url: str
     marinade_api_url: str
     address: str
     key_file: str
     orca_proxy_url: Optional[str] = None
     cluster_url_wss: Optional[str] = None
-    watch_markets: List[str] = field(default_factory=list)
-    watch_symbols: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -136,6 +134,14 @@ class PriceCollectorConfiguration:
     symbols: Tuple[str, List[str]]
     pause_duration: int
     max_number_of_observations: int
+    stale_data_pauses_before_retry: Optional[int] = None
+
+
+@dataclass
+class BalanceCollectorConfiguration:
+    watch_markets: List[str] = field(default_factory=list)
+    watch_symbols: List[str] = field(default_factory=list)
+    stale_data_pauses_before_retry: Optional[int] = None
 
 
 @dataclass
@@ -209,12 +215,8 @@ class MarinadeStakingConfiguration:
 
 @dataclass
 class Configuration:
-    account: AccountConfiguration
+    solana: SolanaConfiguration
     paths: PathsConfiguration
     database: DatabaseConfiguration
-    marketmaker: MarketMakerConfiguration
     price_collector: Optional[PriceCollectorConfiguration]
-    fill_collector: Optional[FillCollectorConfiguration]
-    simplearbitrage: Optional[Dict[str, SimpleArbitrageConfiguration]]
-    saber_arbitrage: Optional[Dict[str, SimpleArbitrageConfiguration]]
-    marinade_staking: Optional[MarinadeStakingConfiguration]
+    balance_collector: Optional[BalanceCollectorConfiguration]

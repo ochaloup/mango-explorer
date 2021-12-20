@@ -1,11 +1,8 @@
 import os
 from logging import getLogger
 
-from .types_ import Configuration, AccountConfiguration, \
-    PathsConfiguration, DatabaseConfiguration, \
-    MarketMakerConfiguration, PriceCollectorConfiguration, \
-    FillCollectorConfiguration, SimpleArbitrageConfiguration, \
-    MarinadeStakingConfiguration
+from .types_ import BalanceCollectorConfiguration, Configuration, SolanaConfiguration, \
+    PathsConfiguration, DatabaseConfiguration, PriceCollectorConfiguration
 
 from config import config_from_toml, ConfigurationSet
 
@@ -53,29 +50,16 @@ def load_configuration(location) -> Configuration:
         for k, v in data['paths'].items()
     }
     cfg = Configuration(
-        account=AccountConfiguration(**data['account']),
+        solana=SolanaConfiguration(**data['solana']),
         paths=PathsConfiguration(**paths),
         database=DatabaseConfiguration(**data['database']),
-        marketmaker=MarketMakerConfiguration(**data['marketmaker']),
         price_collector=optional_section(
             PriceCollectorConfiguration,
             data.get('price_collector')
         ),
-        fill_collector=optional_section(
-            FillCollectorConfiguration,
-            data.get('fill_collector')
-        ),
-        simplearbitrage=optional_multisection(
-            SimpleArbitrageConfiguration,
-            data.get('simplearbitrage')
-        ),
-        saber_arbitrage=optional_multisection(
-            SimpleArbitrageConfiguration,
-            data.get('saber_arbitrage')
-        ),
-        marinade_staking=optional_section(
-            MarinadeStakingConfiguration,
-            data.get('marinade_staking')
+        balance_collector=optional_section(
+            BalanceCollectorConfiguration,
+            data.get('balance_collector')
         ),
     )
 

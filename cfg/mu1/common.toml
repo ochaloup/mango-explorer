@@ -4,7 +4,7 @@ prefix = "solana_trader_"
 instance_prefix = "mu1_"
 dashboard_url = "postgresql://aave2-sensor:8823rfjadfbl$%$$avsdkoo1@localhost:5432/dashboard"
 
-[account]
+[solana]
 
 cluster_url = "https://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
 # marinade original API url https://api.marinade.finance/msol/price_sol, it's cached at production servers
@@ -19,22 +19,3 @@ key_file = "/srv/key/mango-explorer/mu1.json"
 
 tmpdir = "data/tmp"  # to be changed
 datadir = "data/solana"
-orca_arbitrage_heartbeat = "run/orca_arbitrage/heartbeat"
-
-
-[marketmaker]
-# marketmaker cfg is here because otherwise the loading of common cfg fails
-
-min_quote_size = "0.1"
-pair = ""
-spread_ratio = 1
-position_size_ratios = []
-# oracle_providers determine which oracles are used for MM, to get fair price
-oracle_providers = []
-# price_weights determines the weight of oracles in calculating fair price
-price_weights = []
-existing_order_tolerance = "0.001"
-confidence_interval_level = []
-leverage = 0
-poll_interval_seconds = 5
-stale_data_pauses_before_retry = 2

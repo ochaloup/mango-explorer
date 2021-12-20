@@ -12,7 +12,7 @@ from sqlalchemy import Table, Column, DateTime, String, MetaData
 import mango
 from mango.configuration import load_configuration
 from mango.types_ import Configuration
-from mango.heartbeat import heartbeat, heartbeat_init
+from mango.heartbeat import LOGGER, heartbeat, heartbeat_init
 
 
 SPL_TOKENS = mango.market.InventorySource.SPL_TOKENS
@@ -123,18 +123,19 @@ class PhonyWallet:
 def main(args):
 
     cfg = load_configuration(args.config[0])
+    LOGGER.info(f'Configuration loaded: {cfg}')
     heartbeat_init(cfg.paths.account_balances_heartbeat)
-    args.cluster_url = [cfg.account.cluster_url]
-    args.stale_data_pause_before_retry = cfg.marketmaker.stale_data_pauses_before_retry
+    args.cluster_url = [cfg.solana.cluster_url]
+    args.stale_data_pause_before_retry = cfg.balance_collector.stale_data_pauses_before_retry
     context: mango.Context = mango.ContextBuilder.from_command_line_parameters(args)
-    address = cfg.account.address
+    address = cfg.solana.address
     sink = make_db_sink(cfg.database)
     group = mango.Group.load(context)
     wallet = PhonyWallet(address)
 
     markets = [
         context.market_lookup.find_by_symbol(pair)
-        for pair in cfg.account.watch_markets
+        for pair in cfg.balance_collector.watch_markets
     ]
 
     while True:
@@ -155,7 +156,7 @@ def main(args):
                 set([market.base.symbol, market.quote.symbol])
                 for market in spl_markets
             ),
-            set(cfg.account.watch_symbols)
+            set(cfg.balance_collector.watch_symbols)
         )
         for symbol in spl_symbols:
 

@@ -1,0 +1,19 @@
+[config]
+
+base = "common.toml"
+
+[solana]
+
+cluster_url = "https://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
+address = "9pWVzCbuM1EnVRDqjUUWjEL3bV6qWLSxDfx7FtQNwUyL"
+key_file = "/srv/key/mango-explorer/mu1/9pWVzCbuM1EnVRDqjUUWjEL3bV6qWLSxDfx7FtQNwUyL.json"
+
+
+[paths]
+
+account_balances_heartbeat = "run/balances_collector_mango_copeusdc/heartbeat"
+
+[balance_collector]
+
+watch_markets = ["SOL-PERP"]
+stale_data_pauses_before_retry = 2

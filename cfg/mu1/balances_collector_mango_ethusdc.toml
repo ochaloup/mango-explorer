@@ -1,0 +1,18 @@
+[config]
+
+base = "common.toml"
+
+[solana]
+
+cluster_url = "https://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
+address = "Hquj2QqZAcMDwYYTuhFW1WY4a48zi7MvGc7bJ8FvZMAU"
+key_file = "/srv/key/mango-explorer/mu1/Hquj2QqZAcMDwYYTuhFW1WY4a48zi7MvGc7bJ8FvZMAU.json"
+
+[paths]
+
+account_balances_heartbeat = "run/balances_collector_mango_copeusdc/heartbeat"
+
+[balance_collector]
+
+watch_markets = ["ETH/USDC", "FTT/USDC"]
+stale_data_pauses_before_retry = 2

@@ -11,6 +11,7 @@ server_name = "mu1"
 pause_duration = 5
 # number of observation per file
 max_number_of_observations = 1000
+stale_data_pauses_before_retry = 3
 
         # symbols are pairs of oracle name and symbols queried from given oracle.
         [price_collector.symbols]

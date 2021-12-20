@@ -33,7 +33,7 @@ class MSolOracle(Oracle):
 
     def fetch_price(self, context: Context) -> Price:
 
-        response = requests.get(self.cfg.account.marinade_api_url)
+        response = requests.get(self.cfg.solana.marinade_api_url)
         price = Decimal(response.text)
 
         return Price(self.source, datetime.now(), self.market, price, price, price, 0)

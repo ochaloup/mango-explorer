@@ -128,9 +128,9 @@ class FtxOracle(Oracle):
         result = _ftx_get_from_url(symbol)
 
         if self.market.symbol in MSOL_SYMBOLS:
-            factor = _get_msol_price_in_sol(self.cfg.account.marinade_api_url)
+            factor = _get_msol_price_in_sol(self.cfg.solana.marinade_api_url)
         elif self.market.symbol in MSOL_INVERSE_SYMBOLS:
-            factor = 1 / _get_msol_price_in_sol(self.cfg.account.marinade_api_url)
+            factor = 1 / _get_msol_price_in_sol(self.cfg.solana.marinade_api_url)
         else:
             factor = 1
 
