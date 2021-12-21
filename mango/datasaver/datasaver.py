@@ -19,9 +19,10 @@ _JSON_SAVE_TIMESTAMP = 'timestamp'
 _JSON_DATA = 'data'
 
 
-class DataTypes(Enum):
-    unknown = 'unknown'
-    bids = 'bids'
+class DataSaverTypes(Enum):
+    Unknown = 'unknown'
+    Bids = 'bids'
+    Asks = 'asks'
 
 
 class DataSaver:
@@ -48,14 +49,14 @@ class DataSaver:
         if self.__data_file is not None:
             self.__data_file.close()
 
-    def new_observer(self, data_type: DataTypes):
+    def new_observer(self, data_type: DataSaverTypes):
         observer_created = _DataSaverObserver(self, data_type)
         self.observers.append(observer_created)
         return observer_created
 
 
 class _DataSaverObserver(rx.core.Observer):
-    def __init__(self, data_saver: DataSaver, data_type: DataTypes):
+    def __init__(self, data_saver: DataSaver, data_type: DataSaverTypes):
         self.data_type = data_type
         self.data_saver = data_saver
 

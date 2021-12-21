@@ -25,7 +25,7 @@ from .accountinfo import AccountInfo
 from .cache import Cache
 from .combinableinstructions import CombinableInstructions
 from .context import Context
-from .datasaver.datasaver import DataSaver
+from .datasaver.datasaver import DataSaverTypes
 from .group import GroupSlot, Group
 from .healthcheck import HealthCheck
 from .instructions import build_create_serum_open_orders_instructions
@@ -245,7 +245,7 @@ def build_orderbook_watcher(context: Context, manager: WebSocketSubscriptionMana
     orderbook_observer = LatestItemObserverSubscriber[OrderBook](initial_orderbook)
 
     bids_subscription.publisher.subscribe(orderbook_observer)
-    bids_subscription.publisher.subscribe(context.data_saver)
+    bids_subscription.publisher.subscribe(context.data_saver.new_observer(DataSaverTypes.Bids))
     asks_subscription.publisher.subscribe(orderbook_observer)
     health_check.add("orderbook_bids_subscription", bids_subscription.publisher)
     health_check.add("orderbook_asks_subscription", asks_subscription.publisher)
