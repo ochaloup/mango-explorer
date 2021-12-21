@@ -1,0 +1,21 @@
+[config]
+
+base = "common.toml"
+
+[account]
+
+cluster_url = 'http://solana-rpc.rbf.systems:8899/'
+cluster_url_wss = 'ws://solana-rpc.rbf.systems:8900'
+
+address = "G8kHCcbsHL5hwGYWeGJNPxti65kW6PKiiVKoKKUfHbch"
+key_file = "/srv/key/mango-explorer/mu1/G8kHCcbsHL5hwGYWeGJNPxti65kW6PKiiVKoKKUfHbch.json"
+
+[paths]
+
+account_balances_heartbeat = "run/balances_collector_serum_msolusdc/heartbeat"
+
+[balance_collector]
+
+watch_markets = ["MSOL/USDC", "SERUM:SOL/USDC", "MSOL/SOL"]
+watch_symbols = ["ETH", "USDT", "FTT", "SRM", "COPE"]
+stale_data_pauses_before_retry = 2
