@@ -12,7 +12,7 @@ repos:
   rev: 3.8.3
   hooks:
   - id: flake8
-    args: [--max-line-length=100]
+    args: ['--extend-ignore=E402,E501,E722,W291,W391']
 
 - repo: local
   hooks:
