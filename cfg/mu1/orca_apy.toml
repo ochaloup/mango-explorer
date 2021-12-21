@@ -1,3 +1,8 @@
 [config]
 
 base = "common.toml"
+
+[solana]
+
+cluster_url = "https://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
+address = "DXduaJGTVVZLeTy75wDu3CkbEzsA3jFBaTHRvF4UoTyz"
