@@ -60,15 +60,14 @@ class Context:
         self.instrument_lookup: InstrumentLookup = instrument_lookup
         self.market_lookup: MarketLookup = market_lookup
 
-        self.data_saver: typing.Optional[DataSaver] = None
-        if data_saver_path is not None:
-            print(f">>>>>>>>>>>>>>>>>>>>>> having path of {data_saver_path}")
-            self.data_saver: DataSaver = DataSaver(data_saver_path)
-
         self.ping_interval: int = 10
 
         # CHKP addition
         self.reconnect_interval: int = 300
+        self.data_saver: typing.Optional[DataSaver] = None
+        if data_saver_path is not None:
+            print(f">>>>>>>>>>>>>>>>>>>>>> having path of {data_saver_path}")
+            self.data_saver: DataSaver = DataSaver(data_saver_path)
 
         self._last_generated_client_id: int = 0
 

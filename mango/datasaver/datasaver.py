@@ -1,19 +1,23 @@
+from __future__ import annotations  # PEP563 posponed evaluation
+
 import logging
 import rx
 import rx.subject
 import simplejson as json
+import solana
 
 from enum import Enum
 from pathlib import Path
 from io import TextIOWrapper
 from time import time_ns
-from mango.observables import EventSource
+from typing import List
 
 
 # JSON fields
 _JSON_TYPE = 'type'
 _JSON_SAVE_TIMESTAMP = 'timestamp'
 _JSON_DATA = 'data'
+
 
 class DataTypes(Enum):
     unknown = 'unknown'
@@ -23,6 +27,7 @@ class DataTypes(Enum):
 class DataSaver:
     file_path: Path
     data_file: TextIOWrapper
+    observers: List[_DataSaverObserver]
 
     def __init__(self, filename: str):
         self.__logger: logging.Logger = logging.getLogger(self.__class__.__name__)
@@ -38,10 +43,15 @@ class DataSaver:
         self.__data_file = open(self.file_path, mode='a', encoding='utf-8')
 
     def close(self) -> None:
+        for v in self.observers:
+            v.dispose()
         if self.__data_file is not None:
             self.__data_file.close()
 
-    def new_observer(data_type: DataTypes):
+    def new_observer(self, data_type: DataTypes):
+        observer_created = _DataSaverObserver(self, data_type)
+        self.observers.append(observer_created)
+        return observer_created
 
 
 class _DataSaverObserver(rx.core.Observer):

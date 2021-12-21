@@ -190,7 +190,7 @@ class ContextBuilder:
               group_name: typing.Optional[str] = None, group_address: typing.Optional[PublicKey] = None,
               program_address: typing.Optional[PublicKey] = None, serum_program_address: typing.Optional[PublicKey] = None,
               gma_chunk_size: typing.Optional[Decimal] = None, gma_chunk_pause: typing.Optional[Decimal] = None,
-              token_filename: str = SPLTokenLookup.DefaultDataFilepath, data_saver: str = typing.Optional[str]) -> "Context":
+              token_filename: str = SPLTokenLookup.DefaultDataFilepath, data_saver: typing.Optional[str] = None) -> "Context":
         def __public_key_or_none(address: typing.Optional[str]) -> typing.Optional[PublicKey]:
             if address is not None and address != "":
                 return PublicKey(address)

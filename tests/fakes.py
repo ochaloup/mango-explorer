@@ -59,8 +59,7 @@ def fake_context() -> mango.Context:
                             gma_chunk_size=Decimal(20),
                             gma_chunk_pause=Decimal(25),
                             instrument_lookup=mango.IdsJsonTokenLookup("devnet", "devnet.2"),
-                            market_lookup=mango.NullMarketLookup(),
-                            data_saver_path=None)
+                            market_lookup=mango.NullMarketLookup())
     context.client = MockClient()
     return context
 
