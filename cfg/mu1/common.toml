@@ -9,7 +9,6 @@ dashboard_url = "postgresql://aave2-sensor:8823rfjadfbl$%$$avsdkoo1@localhost:54
 cluster_url = "https://falling-aged-flower.solana-mainnet.quiknode.pro/63ca6516821bd013d3d4cd28a1e872509af0d14b/"
 # marinade original API url https://api.marinade.finance/msol/price_sol, it's cached at production servers
 marinade_api_url = "http://localhost:8081/msol/price_sol"
-address = "DXduaJGTVVZLeTy75wDu3CkbEzsA3jFBaTHRvF4UoTyz"
 key_file = "/srv/key/mango-explorer/mu1.json"
 
 [paths]

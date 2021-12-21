@@ -2,7 +2,7 @@
 
 base = "common.toml"
 
-[account]
+[solana]
 
 cluster_url = 'http://solana-rpc.rbf.systems:8899/'
 cluster_url_wss = 'ws://solana-rpc.rbf.systems:8900'
