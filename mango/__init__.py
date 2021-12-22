@@ -51,6 +51,7 @@ from .context import Context as Context
 from .contextbuilder import ContextBuilder as ContextBuilder
 from .createmarketoperations import create_market_instruction_builder as create_market_instruction_builder
 from .createmarketoperations import create_market_operations as create_market_operations
+from .datasaver import DataSaver, DataSaverTypes
 from .encoding import decode_binary as decode_binary
 from .encoding import encode_binary as encode_binary
 from .encoding import encode_key as encode_key

@@ -5,14 +5,16 @@ import rx
 import rx.subject
 import simplejson as json
 
-from solana.publickey import PublicKey
+import mango
+
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from io import TextIOWrapper
 from time import time_ns
 from typing import List
 
-from mango.orders import OrderBook
+from solana.publickey import PublicKey
 
 
 # JSON fields
@@ -25,6 +27,7 @@ class DataSaverTypes(Enum):
     Unknown = 'unknown'
     Bids = 'bids'
     Asks = 'asks'
+    Price = 'price'
 
 
 class DataSaver:
@@ -93,11 +96,28 @@ class _MangoDataSaverJSONEncoder(json.JSONEncoder):
         if isinstance(o, Enum):
             return str(o)
 
-        if isinstance(o, OrderBook):
+        if isinstance(o, mango.orders.OrderBook):
             return {
                 'symbol': o.symbol,
+                'top_bid': o.top_bid,
+                'top_ask': o.top_ask,
+                'mid_price': o.mid_price,
+                'spread': o.spread,
                 'bids': o.bids,
                 'asks': o.asks
+            }
+
+        if isinstance(o, mango.oracle.Price):
+            return {
+                'source': o.source.provider_name,
+                'timestamp': datetime.timestamp(o.timestamp),
+                'market_base': o.market.base.name,
+                'market_quote': o.market.quote.name,
+                'market_address': o.market.address,
+                'top_bid': o.top_bid,
+                'top_ask': o.top_ask,
+                'mid_price': o.mid_price,
+                'confidence': o.confidence
             }
 
         if isinstance(o, PublicKey):

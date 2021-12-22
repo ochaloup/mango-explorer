@@ -25,7 +25,7 @@ from .accountinfo import AccountInfo
 from .cache import Cache
 from .combinableinstructions import CombinableInstructions
 from .context import Context
-from .datasaver.datasaver import DataSaverTypes
+from .datasaver import DataSaverTypes
 from .group import GroupSlot, Group
 from .healthcheck import HealthCheck
 from .instructions import build_create_serum_open_orders_instructions
@@ -165,6 +165,10 @@ def build_price_watcher(cfg: Configuration, context: Context, manager: WebSocket
     latest_price_observer = LatestItemObserverSubscriber(initial_price)
     price_disposable = price_feed.subscribe(latest_price_observer)
     disposer.add_disposable(price_disposable)
+
+    if context.data_saver is not None:
+        price_feed.subscribe(context.data_saver.new_observer(DataSaverTypes.Price))
+
     # CHKP addition
     health_check.add("price_subscription", price_feed)
     symbol_code = market.symbol.replace('/', '').lower()
@@ -245,8 +249,12 @@ def build_orderbook_watcher(context: Context, manager: WebSocketSubscriptionMana
     orderbook_observer = LatestItemObserverSubscriber[OrderBook](initial_orderbook)
 
     bids_subscription.publisher.subscribe(orderbook_observer)
-    bids_subscription.publisher.subscribe(context.data_saver.new_observer(DataSaverTypes.Bids))
     asks_subscription.publisher.subscribe(orderbook_observer)
+
+    if context.data_saver is not None:
+        bids_subscription.publisher.subscribe(context.data_saver.new_observer(DataSaverTypes.Bids))
+        asks_subscription.publisher.subscribe(context.data_saver.new_observer(DataSaverTypes.Asks))
+
     health_check.add("orderbook_bids_subscription", bids_subscription.publisher)
     health_check.add("orderbook_asks_subscription", asks_subscription.publisher)
     return orderbook_observer

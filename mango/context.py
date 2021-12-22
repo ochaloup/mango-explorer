@@ -27,7 +27,7 @@ from solana.rpc.commitment import Commitment
 
 from .client import BetterClient
 from .constants import MangoConstants
-from .datasaver.datasaver import DataSaver
+from .datasaver import DataSaver
 from .instructionreporter import InstructionReporter, CompoundInstructionReporter
 from .instrumentlookup import InstrumentLookup
 from .marketlookup import MarketLookup
