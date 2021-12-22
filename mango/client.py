@@ -446,7 +446,8 @@ class CompoundRPCCaller(HTTPProvider):
                     self.on_provider_change()
                     self._logger.debug(f"Shifted provider - now using: {self.__providers[0]}")
                 return result
-            except (RateLimitException,
+            except (requests.exceptions.HTTPError,
+                    RateLimitException,
                     NodeIsBehindException,
                     StaleSlotException,
                     FailedToFetchBlockhashException) as exception:
@@ -686,7 +687,7 @@ class BetterClient:
 
     def __repr__(self) -> str:
         return f"{self}"
-    
+
     # CHKP additions
     def get_block_height(self):
         response = self.compatible_client._send_request("getBlockHeight")
