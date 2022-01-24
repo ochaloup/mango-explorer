@@ -72,7 +72,7 @@ class MarketMaker:
 
             # CHKP additions
             # desired_orders = self.desired_orders_chain.process(context, model_state)
-            existing_orders = self.market_operations.load_my_orders()
+            existing_orders = model_state.current_orders()
             self.order_tracker.update_on_existing_orders(existing_orders)
             self.model_values_graph.update_values(model_state, existing_orders)
 
@@ -134,7 +134,6 @@ Ignore:
                     self._logger.info(f"Placing {self.market.symbol} {to_place_with_client_id}")
                     place_order = self.market_instruction_builder.build_place_order_instructions(to_place_with_client_id)
                     place_orders += place_order
-
                     to_be_tracked_placing.append(to_place_with_client_id)
 
             self._logger.info('OrderTracker is: %s', self.order_tracker)
