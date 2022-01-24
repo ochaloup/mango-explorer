@@ -17,8 +17,8 @@ Cookbook about how to set-up SOL/USDC and mSOL/USDC marketmaking can be found in
 INSTALL
 =======
 
-pre-commit
-++++++++++
+## pre-commit
+
 
 We use pre-commit to maintain high quality of code we push to master.  We push
 everything into master :-)
