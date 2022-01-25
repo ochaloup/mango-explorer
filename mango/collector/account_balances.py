@@ -149,7 +149,7 @@ class PhonyWallet:
 
 
 def override_args(cfg: Configuration, args):
-    args.cluster_url = [cfg.solana.cluster_url]
+    args.cluster_url = [mango.ClusterUrlData(cfg.solana.cluster_url)]
     args.stale_data_pause_before_retry = cfg.balance_collector.stale_data_pauses_before_retry
 
 
