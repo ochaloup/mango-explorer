@@ -2,7 +2,6 @@ FROM python:3.9-buster AS base
 
 RUN apt-get update && apt-get -y install bc curl zlib1g-dev && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /app
 RUN apt-get update && apt-get -y install bc curl zlib1g-dev
 
 RUN pip install --upgrade pip && pip --no-cache-dir install poetry
