@@ -72,9 +72,7 @@ class MarketMaker:
 
             # CHKP additions
             # desired_orders = self.desired_orders_chain.process(context, model_state)
-            http_orders = self.market_operations.load_my_orders()
             existing_orders = model_state.current_orders()
-            self._logger.info(f"\n  > WS orders: {existing_orders}\n  > HTTP orders {http_orders}")
             self.order_tracker.update_on_existing_orders(existing_orders)
             self.model_values_graph.update_values(model_state, existing_orders)
 
