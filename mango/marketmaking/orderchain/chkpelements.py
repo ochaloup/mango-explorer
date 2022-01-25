@@ -153,7 +153,7 @@ class LimitSpreadNarrowingElement(Element):
 
         their_bids = [
             order
-            for order in model_state.bids
+            for order in model_state.bids()
             if order.owner != order_owner
         ]
         if their_bids:
@@ -163,7 +163,7 @@ class LimitSpreadNarrowingElement(Element):
 
         their_asks = [
             order
-            for order in model_state.asks
+            for order in model_state.asks()
             if order.owner != order_owner
         ]
         if their_asks:
@@ -244,7 +244,7 @@ def is_shallow(
     cutoff = cfg.book_quote_cutoff
 
     if order.side == mango.Side.BUY:
-        for bid_order in model_state.bids:
+        for bid_order in model_state.bids():
 
             if bid_order.price < order.price:
                 return True
@@ -255,7 +255,7 @@ def is_shallow(
                     return False
 
     elif order.side == mango.Side.SELL:
-        for ask_order in model_state.asks:
+        for ask_order in model_state.asks():
 
             if ask_order.price > order.price:
                 return True

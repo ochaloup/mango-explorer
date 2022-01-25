@@ -18,7 +18,7 @@ class BookModel(ValueModel[MarketMakerConfiguration]):
 
         bid_sum_price = 0
         bid_sum_quantity = 0
-        for bid in model_state.bids:
+        for bid in model_state.bids():
 
             if bid.owner == model_state.order_owner:
                 continue
@@ -33,7 +33,7 @@ class BookModel(ValueModel[MarketMakerConfiguration]):
 
         ask_sum_price = 0
         ask_sum_quantity = 0
-        for ask in model_state.asks:
+        for ask in model_state.asks():
 
             if ask.owner == model_state.order_owner:
                 continue

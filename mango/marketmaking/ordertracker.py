@@ -178,8 +178,8 @@ class OrderTracker:
         """
         This method updates the current state of the orders based new orderbook.
         """
-        bids = model_state.bids
-        asks = model_state.asks
+        bids = model_state.bids()
+        asks = model_state.asks()
 
         # 1)
         # if self.orders_to_be_canceled are not in the book

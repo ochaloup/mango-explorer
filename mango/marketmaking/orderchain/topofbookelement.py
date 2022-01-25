@@ -62,12 +62,12 @@ class TopOfBookElement(Element):
             new_price: typing.Optional[Decimal] = None
             if order.side == mango.Side.BUY:
                 place_above: typing.Optional[mango.Order] = self._best_order_from_someone_else(
-                    model_state.bids, model_state.order_owner)
+                    model_state.bids(), model_state.order_owner)
                 if place_above is not None:
                     new_price = place_above.price + adjustment
             else:
                 place_below: typing.Optional[mango.Order] = self._best_order_from_someone_else(
-                    model_state.asks, model_state.order_owner)
+                    model_state.asks(), model_state.order_owner)
                 if place_below is not None:
                     new_price = place_below.price - adjustment
 

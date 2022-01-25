@@ -69,12 +69,12 @@ class AfterAccumulatedDepthElement(Element):
             depth: Decimal = self.depth or order.quantity
             if order.side == mango.Side.BUY:
                 place_below: typing.Optional[mango.Order] = self._accumulated_quantity_exceeds_order(
-                    model_state.bids, model_state.order_owner, depth)
+                    model_state.bids(), model_state.order_owner, depth)
                 if place_below is not None:
                     new_price = place_below.price - adjustment
             else:
                 place_above: typing.Optional[mango.Order] = self._accumulated_quantity_exceeds_order(
-                    model_state.asks, model_state.order_owner, depth)
+                    model_state.asks(), model_state.order_owner, depth)
                 if place_above is not None:
                     new_price = place_above.price + adjustment
 
