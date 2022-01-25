@@ -103,6 +103,8 @@ class SpotInventoryAccountWatcher:
 
 class PerpInventoryAccountWatcher:
     def __init__(self, market: PerpMarket, account_watcher: Watcher[Account], group_watcher: Watcher[Group], cache_watcher: Watcher[Cache], group: Group):
+        self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
+
         self.market: PerpMarket = market
         self.account_watcher: Watcher[Account] = account_watcher
         self.group_watcher: Watcher[Group] = group_watcher
@@ -123,6 +125,11 @@ class PerpInventoryAccountWatcher:
             raise Exception(
                 f"Could not find perp account for {self.market.symbol} in account {account.address} at index {self.perp_account_index}.")
 
+        self._logger.info(
+            'Got latest in PerpInventoryAccountWatcher... account: %s, group: %s, cache: %s, perp_account: %s',
+            account, group, cache, perp_account
+        )
+
         available_collateral: InstrumentValue = self.collateral_calculator.calculate(account, {}, group, cache)
 
         base_lots = perp_account.base_position
@@ -130,5 +137,10 @@ class PerpInventoryAccountWatcher:
         # TODO - what about ADA, when base isn't a Token?
         base_token_value = InstrumentValue(Token.ensure(self.market.base), base_value)
         quote_token_value = account.shared_quote.net_value
+
+        self._logger.info(
+            'Inventory elements are: available_collateral: %s, base_lots: %s, base_value: %s, base_token_value: %s, quote_token_value: %s',
+            available_collateral, base_lots, base_value, base_token_value, quote_token_value
+        )
 
         return Inventory(InventorySource.ACCOUNT, perp_account.mngo_accrued, available_collateral, base_token_value, quote_token_value)
