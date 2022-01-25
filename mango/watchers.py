@@ -232,7 +232,7 @@ def build_orderbook_watcher(context: Context, manager: WebSocketSubscriptionMana
     def _update_asks(account_info: AccountInfo) -> OrderBook:
         new_asks = market.parse_account_info_to_orders(account_info)
         updatable_orderbook.asks = new_asks
-        return
+        return updatable_orderbook
     bids_subscription = WebSocketAccountSubscription[OrderBook](context, orderbook_addresses[0], _update_bids)
     manager.add(bids_subscription)
     asks_subscription = WebSocketAccountSubscription[OrderBook](context, orderbook_addresses[1], _update_asks)
