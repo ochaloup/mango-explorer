@@ -143,6 +143,17 @@ class _MangoDataSaverJSONEncoder(json.JSONEncoder):
                 'asks': self._encode_order(o.asks)
             }
 
+        if isinstance(o, mango.orders.Order):
+            return {
+                'id': o.id,
+                'client_id': o.client_id,
+                'owner': o.owner,
+                'price': o.price,
+                'quantity': o.quantity,
+                'side': o.side,
+                'order_type': o.order_type,
+            }
+
         if isinstance(o, mango.oracle.Price):
             return {
                 'top_bid': o.top_bid,
