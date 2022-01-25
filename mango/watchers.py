@@ -165,17 +165,7 @@ def build_price_watcher(context: Context, manager: WebSocketSubscriptionManager,
     latest_price_observer = LatestItemObserverSubscriber(initial_price)
     price_disposable = price_feed.subscribe(latest_price_observer)
     disposer.add_disposable(price_disposable)
-
-    # CHKP addition
-    if context.cfg.data_saver is not None:
-        data_price_observer = context.cfg.data_saver.get_observer(DataSaverTypes.Price)
-        price_feed.subscribe(data_price_observer)
-        disposer.add_disposable(data_price_observer)
-
-    # CHKP addition
     health_check.add("price_subscription", price_feed)
-    symbol_code = market.symbol.replace('/', '').lower()
-    health_check.add(f"price_subscription_{provider_name}_{symbol_code}", price_feed)
     return latest_price_observer
 
 
