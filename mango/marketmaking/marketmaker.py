@@ -136,8 +136,6 @@ Ignore:
                     place_orders += place_order
                     to_be_tracked_placing.append(to_place_with_client_id)
 
-            self._logger.info('OrderTracker is: %s', self.order_tracker)
-
             crank = self.market_instruction_builder.build_crank_instructions(model_state.accounts_to_crank)
             settle = self.market_instruction_builder.build_settle_instructions()
 
@@ -157,6 +155,8 @@ Ignore:
                     to_place=to_be_tracked_placing,
                     to_cancel=to_be_tracked_cancelation
                 )
+
+            self._logger.info('OrderTracker is: %s', self.order_tracker)
 
             self.pulse_complete.on_next(datetime.now())
 
