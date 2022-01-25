@@ -251,7 +251,7 @@ def main(args):
                     ))
 
         heartbeat(cfg.paths.account_balances_heartbeat)
-        sleep(20)
+        sleep(cfg.collection_interval_seconds)
 
 
 if __name__ == '__main__':

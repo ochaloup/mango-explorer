@@ -179,6 +179,7 @@ class BalanceCollectorConfiguration:
     watch_markets: List[str] = field(default_factory=list)
     watch_symbols: List[str] = field(default_factory=list)
     stale_data_pauses_before_retry: Optional[int] = None
+    collection_interval_seconds: int = 20
 
 
 @dataclass

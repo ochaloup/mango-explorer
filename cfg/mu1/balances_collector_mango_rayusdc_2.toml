@@ -17,3 +17,4 @@ account_balances_heartbeat = "run/balances_collector_mango_rayusdc_2/heartbeat"
 watch_markets = ["RAY/USDC"]
 watch_symbols = ["MSOL", "RAY", "USDC"]
 stale_data_pauses_before_retry = 2
+collection_interval_seconds = 1800

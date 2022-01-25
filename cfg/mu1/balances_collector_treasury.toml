@@ -1,0 +1,18 @@
+[config]
+
+base = "common.toml"
+
+[solana]
+
+cluster_url = "https://6b45a2f5-6b33-4c12-ad6e-d6b79a584698.solana.bison.run/rpc"
+address = "APFtLE6ETjxVcFCZDYcUipVQFeLPokHj53kTNTQDYe1E"
+key_file = ""
+
+[paths]
+
+account_balances_heartbeat = "run/balances_collector_treasury/heartbeat"
+
+[balance_collector]
+
+stale_data_pauses_before_retry = 2
+collection_interval_seconds = 1800

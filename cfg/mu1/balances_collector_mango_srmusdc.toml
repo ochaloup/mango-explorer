@@ -17,3 +17,4 @@ account_balances_heartbeat = "run/balances_collector_mango_srmusdc/heartbeat"
 
 watch_markets = ["SRM/USDC"]
 stale_data_pauses_before_retry = 2
+collection_interval_seconds = 1800
