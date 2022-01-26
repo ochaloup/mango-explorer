@@ -4,7 +4,6 @@ base = "common.toml"
 
 [solana]
 
-cluster_url = "https://6b45a2f5-6b33-4c12-ad6e-d6b79a584698.solana.bison.run/rpc"
 address = "7nmgeDXsyJLB9Re9bM2z7n5RsYhxgeoWUWes8yJAtZja"
 key_file = "/srv/key/mango-explorer/mu1/7nmgeDXsyJLB9Re9bM2z7n5RsYhxgeoWUWes8yJAtZja.json"
 

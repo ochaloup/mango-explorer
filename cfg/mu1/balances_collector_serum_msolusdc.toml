@@ -4,7 +4,7 @@ base = "common.toml"
 
 [solana]
 
-cluster_url_wss = 'ws://solana-rpc.rbf.systems:8900'
+#cluster_url_wss = 'ws://solana-rpc.rbf.systems:8900'
 address = "G8kHCcbsHL5hwGYWeGJNPxti65kW6PKiiVKoKKUfHbch"
 key_file = "/srv/key/mango-explorer/mu1/G8kHCcbsHL5hwGYWeGJNPxti65kW6PKiiVKoKKUfHbch.json"
 
