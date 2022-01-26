@@ -155,7 +155,7 @@ def override_args(cfg: Configuration, args):
 
 def main(args):
 
-    cfg = load_configuration(args.config[0])
+    cfg: Configuration = load_configuration(args.config[0])
     heartbeat_init(cfg.paths.account_balances_heartbeat)
     override_args(cfg, args)
     context: mango.Context = mango.ContextBuilder.from_command_line_parameters(args)
@@ -251,7 +251,7 @@ def main(args):
                     ))
 
         heartbeat(cfg.paths.account_balances_heartbeat)
-        sleep(cfg.collection_interval_seconds)
+        sleep(cfg.balance_collector.collection_interval_seconds)
 
 
 if __name__ == '__main__':
