@@ -293,7 +293,7 @@ class OrderTrackerCancelAll:
             ]
             if order_time:
                 order_times.append(order_time[0])
-            if len(order_time) != 1:
+            if len(order_time) > 1:
                 self._logger.info(
                     f'Found order that has more timestamp of creation. {moved_order}, {order_time}'
                 )
@@ -311,29 +311,32 @@ class OrderTrackerCancelAll:
 
         # Cancel everything prior to latest_cancel_all
         for order_client_id, t in list(self._from_time.items()):
-            orders = [
-                *[
-                    order
-                    for order in self.orders_to_be_in_book if order.client_id == order_client_id
-                ],
-                *[order for order in self.orders_in_book if order.client_id == order_client_id],
-                *[
-                    order
-                    for order in self.orders_to_be_canceled if order.client_id == order_client_id
-                ],
-                *[
-                    order
-                    for order in self.orders_to_be_canceled_from_book
-                    if order.client_id == order_client_id
+            if t < latest_cancel_all:
+                orders = [
+                    *[
+                        order
+                        for order in self.orders_to_be_in_book if order.client_id == order_client_id
+                    ],
+                    *[order for order in self.orders_in_book if order.client_id == order_client_id],
+                    *[
+                        order
+                        for order in self.orders_to_be_canceled if order.client_id == order_client_id
+                    ],
+                    *[
+                        order
+                        for order in self.orders_to_be_canceled_from_book
+                        if order.client_id == order_client_id
+                    ]
                 ]
-            ]
-            order = None if not orders else orders[0]
+                order = None if not orders else orders[0]
 
-            if t < latest_cancel_all and order is not None:
-                self.remove_from_orders_to_be_in_book(order)
-                self.remove_from_orders_in_book(order)
-                self.remove_from_orders_to_be_canceled_from_book(order)
-                self.remove_from_orders_to_be_canceled(order)
+                self._logger.info(f'Forgetting {order_client_id}, {order}')
+
+                if order is not None:
+                    self.remove_from_orders_to_be_in_book(order)
+                    self.remove_from_orders_in_book(order)
+                    self.remove_from_orders_to_be_canceled_from_book(order)
+                    self.remove_from_orders_to_be_canceled(order)
 
     def __str__(self) -> str:
         return f'''OrderTracker [

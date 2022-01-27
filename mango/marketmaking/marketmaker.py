@@ -74,7 +74,6 @@ class MarketMaker:
             # CHKP additions
             # desired_orders = self.desired_orders_chain.process(context, model_state)
             existing_orders = model_state.current_orders()
-            self._logger.info(f'tracker: {self.order_tracker.orders_in_book}, outside: {existing_orders}')
             self.order_tracker.update_on_existing_orders(existing_orders)
             self.model_values_graph.update_values(model_state, existing_orders)
 
