@@ -253,6 +253,9 @@ class OrderTrackerCancelAll:
         by dropping all orders (from all possible states) that were send to the market
         before the most current cancel that happened before the moved order.
         """
+        self._logger.info(
+            f'Updating latest cancel all based on count(moved_orders): {len(moved_orders)}'
+        )
         order_times: typing.List[float] = []
         for moved_order in moved_orders:
             order_time = [
@@ -274,7 +277,9 @@ class OrderTrackerCancelAll:
         ]
         latest_cancel_all = 0 if not cancel_timestamps else max(cancel_timestamps)
 
-        self._logger.info(f'Removing orders with creation timestamp before {latest_cancel_all}')
+        self._logger.info(
+            f'Removing orders with based on timestamps: {latest_cancel_all}, {latest_order_time}'
+        )
 
         # Cancel everything prior to latest_cancel_all
         for order_client_id, t in self._from_time.items():
