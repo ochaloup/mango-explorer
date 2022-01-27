@@ -131,13 +131,16 @@ class OrderTrackerCancelAll:
         self.orders_to_be_canceled_from_book.append(order)
 
     def remove_from_orders_to_be_in_book(self, order: mango.Order) -> None:
-        self.orders_to_be_in_book.remove(order)
+        if order in self.orders_to_be_in_book:
+            self.orders_to_be_in_book.remove(order)
 
     def remove_from_orders_in_book(self, order: mango.Order) -> None:
-        self.orders_in_book.remove(order)
+        if order in self.orders_in_book:
+            self.orders_in_book.remove(order)
 
     def remove_from_orders_to_be_canceled_from_book(self, order: mango.Order) -> None:
-        self.orders_to_be_canceled_from_book.remove(order)
+        if order in self.orders_to_be_canceled_from_book:
+            self.orders_to_be_canceled_from_book.remove(order)
         self._from_time = {
             order_client_id: t
             for order_client_id, t in self._from_time.items()
@@ -145,11 +148,12 @@ class OrderTrackerCancelAll:
         }
 
     def remove_from_orders_to_be_canceled(self, order: mango.Order) -> None:
-        self.orders_to_be_canceled.remove(order)
+        if order in self.orders_to_be_canceled:
+            self.orders_to_be_canceled.remove(order)
         self._from_time = {
             order_client_id: t
             for order_client_id, t in self._from_time.items()
-            if order_client_id.client_id != order.client_id
+            if order_client_id != order.client_id
         }
 
     def update_on_existing_orders(self, existing_orders: typing.List[mango.Order]) -> None:
@@ -193,8 +197,10 @@ class OrderTrackerCancelAll:
 
         # 1) move orders from self.orders_to_be_in_book into self.orders_in_book
         # in case they are in the book
+        print(f'self.orders_to_be_in_book, {self.orders_to_be_in_book}')
         for create_order in list(self.orders_to_be_in_book):
             book_side = bids if create_order.side == mango.Side.BUY else asks
+            print(f'create_order {_is_in_book(create_order, book_side)} {create_order}')
             if _is_in_book(create_order, book_side):
                 self.remove_from_orders_to_be_in_book(create_order)
                 self.append_to_orders_in_book(create_order)
@@ -225,11 +231,6 @@ class OrderTrackerCancelAll:
         to_place = [order for order in to_place if order.order_type != mango.OrderType.IOC]
         to_cancel = to_cancel if to_cancel is not None else []
 
-        # 1)
-        # Update self.orders_to_be_in_book by the reconciled.to_place
-        for order in to_place:
-            self.append_to_orders_to_be_in_book(order, timestamp)
-
         # 2)
         # In case there were any cancels, there was cancel all -> remember it
         if to_cancel:
@@ -239,12 +240,17 @@ class OrderTrackerCancelAll:
         # Since we are assuming that there has been cancel all in case there is any cancel
         # we want to move all orders to orders_to_be_canceled and orders_to_be_canceled_from_book.
         if to_cancel:
-            for order in self.orders_to_be_in_book:
+            for order in list(self.orders_to_be_in_book):
                 self.remove_from_orders_to_be_in_book(order)
                 self.append_to_orders_to_be_canceled(order)
-            for order in self.orders_in_book:
+            for order in list(self.orders_in_book):
                 self.remove_from_orders_in_book(order)
                 self.append_to_orders_to_be_canceled_from_book(order)
+
+        # 1) order is important!!!
+        # Update self.orders_to_be_in_book by the reconciled.to_place
+        for order in to_place:
+            self.append_to_orders_to_be_in_book(order, timestamp)
 
     def _update_on_latest_cancel_all(self, moved_orders: typing.List[mango.Order]) -> None:
         """
@@ -269,20 +275,20 @@ class OrderTrackerCancelAll:
                 self._logger.info(
                     f'Found order that has more timestamp of creation. {moved_order}, {order_time}'
                 )
-        latest_order_time = 0 if not order_times else max(order_times)
+
+        # confirmed cancels
         cancel_timestamps = [
             timestamp
             for timestamp in self.cancel_all_timestamps
-            if timestamp < latest_order_time
+            if timestamp in order_times
         ]
+        # latest confirmed cancel
         latest_cancel_all = 0 if not cancel_timestamps else max(cancel_timestamps)
 
-        self._logger.info(
-            f'Removing orders with based on timestamps: {latest_cancel_all}, {latest_order_time}'
-        )
+        self._logger.info(f'Removing orders with based on timestamps: {latest_cancel_all}')
 
         # Cancel everything prior to latest_cancel_all
-        for order_client_id, t in self._from_time.items():
+        for order_client_id, t in list(self._from_time.items()):
             orders = [
                 *[
                     order
@@ -302,10 +308,10 @@ class OrderTrackerCancelAll:
             order = None if not orders else orders[0]
 
             if t < latest_cancel_all and order is not None:
-                self.remove_from_orders_to_be_in_book(self, order)
-                self.remove_from_orders_in_book(self, order)
-                self.remove_from_orders_to_be_canceled_from_book(self, order)
-                self.remove_from_orders_to_be_canceled(self, order)
+                self.remove_from_orders_to_be_in_book(order)
+                self.remove_from_orders_in_book(order)
+                self.remove_from_orders_to_be_canceled_from_book(order)
+                self.remove_from_orders_to_be_canceled(order)
 
     def __str__(self) -> str:
         return f'''OrderTracker [
