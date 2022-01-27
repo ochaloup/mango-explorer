@@ -21,3 +21,4 @@ from .orderreconciler import NullOrderReconciler as NullOrderReconciler
 from .orderreconciler import OrderReconciler as OrderReconciler
 from .reconciledorders import ReconciledOrders as ReconciledOrders
 from .toleranceorderreconciler import ToleranceOrderReconciler as ToleranceOrderReconciler
+from .toleranceorderinflightreconciler import ToleranceOrderInFlightReconciler

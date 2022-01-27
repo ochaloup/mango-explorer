@@ -16,6 +16,7 @@
 
 import logging
 import mango
+import time
 import traceback
 import typing
 
@@ -96,7 +97,18 @@ class MarketMaker:
             self._logger.debug(f"""Before reconciliation: all owned orders on current orderbook [{model_state.market.symbol}]:
     {mango.indent_collection_as_str(existing_orders)}""")
 
-            reconciled = self.order_reconciler.reconcile(model_state, existing_orders, desired_orders)
+            # At this point we have all orders that might be in the book
+            # (to_be_canceled and to_be_in_book)
+            # We also have all the desired orders.
+            # If any order that might be in book differs from desired orders -> requote.
+            if isinstance(self.market_instruction_builder, mango.PerpMarketInstructionBuilder):
+                reconciled = self.order_reconciler.reconcile(
+                    model_state,
+                    self.order_tracker.all_orders,
+                    desired_orders
+                )
+            else:
+                reconciled = self.order_reconciler.reconcile(model_state, existing_orders, desired_orders)
             self._logger.debug(f"""After reconciliation
 Keep:
     {mango.indent_collection_as_str(reconciled.to_keep)}
@@ -129,16 +141,13 @@ Ignore:
             to_be_tracked_placing = []
             place_orders = mango.CombinableInstructions.empty()
             for to_place in reconciled.to_place:
-                # place orders only if on given side, there is no "waiting" order
-                # if there is order in the book, we are most likely moving it
-                if not self.order_tracker.get_side_orders_to_be_in_book(to_place.side):
-                    desired_client_id: int = context.generate_client_id()
-                    to_place_with_client_id = to_place.with_client_id(desired_client_id)
+                desired_client_id: int = context.generate_client_id()
+                to_place_with_client_id = to_place.with_client_id(desired_client_id)
 
-                    self._logger.info(f"Placing {self.market.symbol} {to_place_with_client_id}")
-                    place_order = self.market_instruction_builder.build_place_order_instructions(to_place_with_client_id)
-                    place_orders += place_order
-                    to_be_tracked_placing.append(to_place_with_client_id)
+                self._logger.info(f"Placing {self.market.symbol} {to_place_with_client_id}")
+                place_order = self.market_instruction_builder.build_place_order_instructions(to_place_with_client_id)
+                place_orders += place_order
+                to_be_tracked_placing.append(to_place_with_client_id)
 
             crank = self.market_instruction_builder.build_crank_instructions(model_state.accounts_to_crank)
             settle = self.market_instruction_builder.build_settle_instructions()
@@ -157,7 +166,8 @@ Ignore:
 
                 self.order_tracker.update_on_reconcile(
                     to_place=to_be_tracked_placing,
-                    to_cancel=to_be_tracked_cancelation
+                    to_cancel=to_be_tracked_cancelation,
+                    timestamp=time.time()
                 )
 
             self._logger.info('OrderTracker is: %s', self.order_tracker)
