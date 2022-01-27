@@ -16,3 +16,4 @@ account_balances_heartbeat = "run/balances_collector_treasury/heartbeat"
 watch_symbols = ["MNGO", "SOL", "MSOL", "USDC", "ETH", "USDT", "FTT", "SRM", "COPE"]
 stale_data_pauses_before_retry = 2
 collection_interval_seconds = 1800
+heartbeat_enabled = false

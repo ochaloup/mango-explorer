@@ -13,6 +13,7 @@ from sqlalchemy import Table, Column, DateTime, String, MetaData
 import mango
 from mango.configuration import load_configuration
 from mango.types_ import Configuration
+from mango.heartbeat import heartbeat, heartbeat_init
 from mango.chkpcontextconf import ChkpContextConfiguration
 
 
@@ -152,10 +153,14 @@ def override_args(cfg: Configuration, args):
     args.stale_data_pause_before_retry = cfg.balance_collector.stale_data_pauses_before_retry
 
 
+def heartbeat_check_enabled(cfg: Configuration):
+    if cfg.balance_collector.heartbeat_enabled:
+        heartbeat(cfg.paths.account_balances_heartbeat)
+
+
 def main(args):
 
     cfg: Configuration = load_configuration(args.config[0])
-    # heartbeat_init(cfg.paths.account_balances_heartbeat)
     override_args(cfg, args)
     context: mango.Context = mango.ContextBuilder.from_command_line_parameters(args)
     context.cfg = ChkpContextConfiguration(
@@ -170,6 +175,9 @@ def main(args):
         context.market_lookup.find_by_symbol(pair)
         for pair in cfg.balance_collector.watch_markets
     ]
+
+    if cfg.balance_collector.heartbeat_enabled:
+        heartbeat_init(cfg.paths.account_balances_heartbeat)
     LOGGER.info(f'Loading markets: {markets}')
 
     while True:
@@ -206,7 +214,7 @@ def main(args):
                 value=balance.value + orders[symbol],
             ))
 
-        # heartbeat(cfg.paths.account_balances_heartbeat)
+        heartbeat_check_enabled(cfg)
         LOGGER.info(f'Sinked prices for symbols: {spl_symbols}')
 
         sol_balance = context.client.get_balance(address)
@@ -218,7 +226,7 @@ def main(args):
             value=sol_balance,
         ))
 
-        # heartbeat(cfg.paths.account_balances_heartbeat)
+        heartbeat_check_enabled(cfg)
         LOGGER.info(f'Sinked SOL balance for address: {address}')
 
         mango_accounts = mango.Account.load_all_for_owner(context, address, group)
@@ -251,7 +259,7 @@ def main(args):
                         value=slot.net_value.value + orders[symbol] + positions[symbol],
                     ))
 
-        # heartbeat(cfg.paths.account_balances_heartbeat)
+        heartbeat_check_enabled(cfg)
         LOGGER.info(f'Sinked order positions for Mango Accounts: {[account.account_info for account in mango_accounts]}')
         sleep(cfg.balance_collector.collection_interval_seconds)
 

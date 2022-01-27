@@ -18,3 +18,4 @@ watch_markets = ["RAY/USDC"]
 watch_symbols = ["MSOL", "RAY", "USDC"]
 stale_data_pauses_before_retry = 2
 collection_interval_seconds = 1800
+heartbeat_enabled = false
