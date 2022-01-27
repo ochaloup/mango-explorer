@@ -168,7 +168,7 @@ Ignore:
                     timestamp=time.time()
                 )
 
-            self._logger.info(f'OrderTracker is: {self.order_tracker}')
+            self._logger.info(f'Size of OrderTracker is: {len(self.order_tracker.all_orders)}')
 
             self.pulse_complete.on_next(datetime.now())
 

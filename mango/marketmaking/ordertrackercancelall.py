@@ -103,7 +103,7 @@ class OrderTrackerCancelAll:
 
     @property
     def all_orders(self) -> typing.List[mango.Order]:
-        self._logger.info(
+        self._logger.debug(
             'Existing orders are: in_book: %s, to_be_in_book: %s, to_be_canceled: %s, to_be_canceled_from_book: %s',
             self.orders_in_book,
             self.orders_to_be_in_book,
