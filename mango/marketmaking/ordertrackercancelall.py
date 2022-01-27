@@ -233,7 +233,7 @@ class OrderTrackerCancelAll:
         # 2)
         # In case there were any cancels, there was cancel all -> remember it
         if to_cancel:
-            self.cancel_all_timestamp.append(timestamp)
+            self.cancel_all_timestamps.append(timestamp)
 
         # 3)
         # Since we are assuming that there has been cancel all in case there is any cancel
