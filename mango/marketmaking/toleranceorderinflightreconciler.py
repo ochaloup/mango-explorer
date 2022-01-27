@@ -49,7 +49,7 @@ class ToleranceOrderInFlightReconciler(ToleranceOrderReconciler):
             if order.side == desired.side
         ]
         for remaining in remaining_side:
-            if not self.is_within_tolderance(self, remaining, desired):
+            if not self.is_within_tolderance(remaining, desired):
                 return False
         return True
 
