@@ -265,12 +265,13 @@ class OrderTrackerCancelAll:
                 self._logger.info(
                     f'Found order that has more timestamp of creation. {moved_order}, {order_time}'
                 )
-        latest_order_time = max(order_times)
-        latest_cancel_all = max(
+        latest_order_time = 0 if not order_times else max(order_times)
+        cancel_all_timestamp = [
             timestamp
             for timestamp in self.cancel_all_timestamp
             if timestamp < latest_order_time
-        )
+        ]
+        latest_cancel_all = 0 if not cancel_all_timestamp else max(cancel_all_timestamp)
 
         # Cancel everything prior to latest_cancel_all
         for order, t in self._from_time.items():
