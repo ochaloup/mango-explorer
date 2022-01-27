@@ -95,7 +95,8 @@ class OrderTrackerCancelAll:
         # List of timestamps in which cancel all have been send together with create orders.
         self.cancel_all_timestamps: typing.List[float] = []
 
-        self._from_time: typing.Dict[mango.Orderf, float] = {}
+        # {client-id: timestamp}
+        self._from_time: typing.Dict[int, float] = {}
 
         # Currently has no effect.
         self.threshold_life_in_flight: int = cfg.threshold_life_in_flight
@@ -118,7 +119,7 @@ class OrderTrackerCancelAll:
 
     def append_to_orders_to_be_in_book(self, order: mango.Order, timestamp: float) -> None:
         self.orders_to_be_in_book.append(order)
-        self._from_time[order] = timestamp
+        self._from_time[order.client_id] = timestamp
 
     def append_to_orders_in_book(self, order: mango.Order) -> None:
         self.orders_in_book.append(order)
@@ -138,17 +139,17 @@ class OrderTrackerCancelAll:
     def remove_from_orders_to_be_canceled_from_book(self, order: mango.Order) -> None:
         self.orders_to_be_canceled_from_book.remove(order)
         self._from_time = {
-            order_: t
-            for order_, t in self._from_time.items()
-            if order_.client_id != order.client_id
+            order_client_id: t
+            for order_client_id, t in self._from_time.items()
+            if order_client_id != order.client_id
         }
 
     def remove_from_orders_to_be_canceled(self, order: mango.Order) -> None:
         self.orders_to_be_canceled.remove(order)
         self._from_time = {
-            order_: t
-            for order_, t in self._from_time.items()
-            if order_.client_id != order.client_id
+            order_client_id: t
+            for order_client_id, t in self._from_time.items()
+            if order_client_id.client_id != order.client_id
         }
 
     def update_on_existing_orders(self, existing_orders: typing.List[mango.Order]) -> None:
@@ -256,8 +257,8 @@ class OrderTrackerCancelAll:
         for moved_order in moved_orders:
             order_time = [
                 t
-                for order, t in self._from_time.items()
-                if order.client_id == moved_order.client_id
+                for order_client_id, t in self._from_time.items()
+                if order_client_id == moved_order.client_id
             ]
             if order_time:
                 order_times.append(order_time[0])
@@ -274,8 +275,26 @@ class OrderTrackerCancelAll:
         latest_cancel_all = 0 if not cancel_timestamps else max(cancel_timestamps)
 
         # Cancel everything prior to latest_cancel_all
-        for order, t in self._from_time.items():
-            if t < latest_cancel_all:
+        for order_client_id, t in self._from_time.items():
+            orders = [
+                *[
+                    order
+                    for order in self.orders_to_be_in_book if order.client_id == order_client_id
+                ],
+                *[order for order in self.orders_in_book if order.client_id == order_client_id],
+                *[
+                    order
+                    for order in self.orders_to_be_canceled if order.client_id == order_client_id
+                ],
+                *[
+                    order
+                    for order in self.orders_to_be_canceled_from_book
+                    if order.client_id == order_client_id
+                ]
+            ]
+            order = None if not orders else orders[0]
+
+            if t < latest_cancel_all and order is not None:
                 self.remove_from_orders_to_be_in_book(self, order)
                 self.remove_from_orders_in_book(self, order)
                 self.remove_from_orders_to_be_canceled_from_book(self, order)
