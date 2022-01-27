@@ -81,6 +81,7 @@ class MarketMaker:
                 context,
                 model_state
             )
+            self._logger.info(f'Desired orders are {desired_orders}')
 
             # This is here to give the orderchain the chance to look at state and set `not_quoting`. Any
             # element in the orderchain can set this, rather than just return an empty list of desired
@@ -121,6 +122,9 @@ Ignore:
 
             to_be_tracked_cancelation = []
             cancellations = mango.CombinableInstructions.empty()
+            self._logger.info(
+                f'Cancelling from reconciled: {len(reconciled.to_cancel)}, {len(reconciled.to_keep)}'
+            )
             # Perp markets have a CANCEL_ALL instruction that Spot and Serum markets don't. Use it if we can.
             if reconciled.cancelling_all and isinstance(self.market_instruction_builder, mango.PerpMarketInstructionBuilder):
                 ids = [f"{ord.id} / {ord.client_id}" for ord in reconciled.to_cancel]

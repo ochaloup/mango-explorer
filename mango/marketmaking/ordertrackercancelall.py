@@ -296,7 +296,7 @@ class OrderTrackerCancelAll:
                 for order_client_id, t in self._from_time.items()
                 if order_client_id == moved_order.client_id
             ]
-            self._logger.info(f'Timestamps of {moved_order} is {order_time}')
+            self._logger.debug(f'Timestamps of {moved_order} is {order_time}')
             if order_time:
                 order_times.append(order_time[0])
             if len(order_time) > 1:
@@ -314,7 +314,7 @@ class OrderTrackerCancelAll:
         latest_cancel_all = 0 if not cancel_timestamps else max(cancel_timestamps)
 
         self._logger.info(
-            f'Removing orders with based on timestamps: {latest_cancel_all}, {moved_orders}'
+            f'Removing orders based on timestamps: {latest_cancel_all}, {moved_orders}'
         )
 
         # Cancel everything prior to latest_cancel_all
