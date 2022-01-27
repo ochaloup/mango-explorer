@@ -61,7 +61,7 @@ class ToleranceOrderInFlightReconciler(ToleranceOrderReconciler):
         """
         True if there are no desired_nonIOC and some remaining_existing_orders for any side.
         """
-        for side in [mango.OrderType.BUY, mango.OrderType.SELL]:
+        for side in [mango.Side.BUY, mango.Side.SELL]:
             remaining_side = [
                 order
                 for order in remaining_existing_orders
