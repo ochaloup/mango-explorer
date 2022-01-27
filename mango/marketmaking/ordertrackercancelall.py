@@ -181,6 +181,9 @@ class OrderTrackerCancelAll:
             If any order is moved, this gives us latest timestamp of valid information
                 -> we can drop from "in flight" state older orders than those are being observed
                    in book.
+            What might also happen, is that before the above observation happens
+                we moved the order to orders_to_be_canceled.
+                    ->  move order from orders_to_be_canceled to orders_to_be_canceled_from_book
 
         2)
         Orders that have been previously seen in orderbook and have been canceled
@@ -211,6 +214,18 @@ class OrderTrackerCancelAll:
             if is_in_book:
                 self.remove_from_orders_to_be_in_book(create_order)
                 self.append_to_orders_in_book(create_order)
+                moved_orders.append(create_order)
+        # and the same for the other case
+        for create_order in list(self.orders_to_be_canceled):
+            book_side = bids if create_order.side == mango.Side.BUY else asks
+            is_in_book = _is_in_book(create_order, book_side)
+            self._logger.info(
+                f'Moving from orders_to_be_canceled to orders_to_be_canceled_from_book:'
+                f' {is_in_book}{create_order}'
+            )
+            if is_in_book:
+                self.remove_from_orders_to_be_canceled(create_order)
+                self.append_to_orders_to_be_canceled_from_book(create_order)
                 moved_orders.append(create_order)
 
         # 2)
