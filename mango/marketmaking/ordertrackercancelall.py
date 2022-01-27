@@ -274,6 +274,8 @@ class OrderTrackerCancelAll:
         ]
         latest_cancel_all = 0 if not cancel_timestamps else max(cancel_timestamps)
 
+        self._logger.info(f'Removing orders with creation timestamp before {latest_cancel_all}')
+
         # Cancel everything prior to latest_cancel_all
         for order_client_id, t in self._from_time.items():
             orders = [
