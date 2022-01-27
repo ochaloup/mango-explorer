@@ -306,7 +306,7 @@ class OrderTrackerCancelAll:
     orders_to_be_in_book: {self.orders_to_be_in_book}
     orders_to_be_canceled: {self.orders_to_be_canceled}
     orders_to_be_canceled_from_book: {self.orders_to_be_canceled_from_book}
-    cancel_all_timestamp: {self.cancel_all_timestamp}
+    cancel_all_timestamps: {self.cancel_all_timestamps}
     _from_time: {self._from_time}
     threshold_life_in_flight: {self.threshold_life_in_flight}
 ]'''
