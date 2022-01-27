@@ -197,10 +197,10 @@ class OrderTrackerCancelAll:
 
         # 1) move orders from self.orders_to_be_in_book into self.orders_in_book
         # in case they are in the book
-        print(f'self.orders_to_be_in_book, {self.orders_to_be_in_book}')
         for create_order in list(self.orders_to_be_in_book):
             book_side = bids if create_order.side == mango.Side.BUY else asks
-            print(f'create_order {_is_in_book(create_order, book_side)} {create_order}')
+            is_in_book = _is_in_book(create_order, book_side)
+            self._logger.info(f'Moving from to_be_in_book to in_book: {is_in_book}{create_order}')
             if _is_in_book(create_order, book_side):
                 self.remove_from_orders_to_be_in_book(create_order)
                 self.append_to_orders_in_book(create_order)
