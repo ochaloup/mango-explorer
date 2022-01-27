@@ -208,6 +208,7 @@ def main(args):
             ))
 
         heartbeat(cfg.paths.account_balances_heartbeat)
+        LOGGER.info(f'Sinked prices for symbols: {spl_symbols}')
 
         sol_balance = context.client.get_balance(address)
         sink(dict(
@@ -219,6 +220,7 @@ def main(args):
         ))
 
         heartbeat(cfg.paths.account_balances_heartbeat)
+        LOGGER.info(f'Sinked SOL balance for address: {address}')
 
         mango_accounts = mango.Account.load_all_for_owner(context, address, group)
         mango_symbols = reduce(
@@ -251,6 +253,7 @@ def main(args):
                     ))
 
         heartbeat(cfg.paths.account_balances_heartbeat)
+        LOGGER.info(f'Sinked order positions for Mango Accounts: {[account.account_info for account in mango_accounts]}')
         sleep(cfg.balance_collector.collection_interval_seconds)
 
 
