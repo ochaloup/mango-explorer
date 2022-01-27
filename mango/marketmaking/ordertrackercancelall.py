@@ -9,20 +9,27 @@ from mango.types_ import MarketMakerConfiguration
 
 def _is_in_book(order: mango.Order, book_side: typing.Sequence[mango.Order]) -> bool:
     """Tests if the order is in book."""
+    first_outside_price = None
     if order.side == mango.Side.BUY:
         # we are on bid, the book_side is decreasing in price
         for book_order in book_side:
             if order.client_id == book_order.client_id:
                 return True
             if book_order.price < order.price:
-                return False
+                if first_outside_price is None:
+                    first_outside_price = book_order.price
+                if book_order.price < first_outside_price:
+                    return False
     elif order.side == mango.Side.SELL:
         # we are on ask, the book_side is increasing in price
         for book_order in book_side:
             if order.client_id == book_order.client_id:
                 return True
             if book_order.price > order.price:
-                return False
+                if first_outside_price is None:
+                    first_outside_price = book_order.price
+                if book_order.price > first_outside_price:
+                    return False
     return False
 
 
