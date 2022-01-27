@@ -154,14 +154,19 @@ class OrderTrackerCancelAll:
             if order_client_id != order.client_id
         }
 
-    def remove_from_orders_to_be_canceled(self, order: mango.Order) -> None:
+    def remove_from_orders_to_be_canceled(
+        self,
+        order: mango.Order,
+        keep_from_time: bool = False
+    ) -> None:
         if order in self.orders_to_be_canceled:
             self.orders_to_be_canceled.remove(order)
-        self._from_time = {
-            order_client_id: t
-            for order_client_id, t in self._from_time.items()
-            if order_client_id != order.client_id
-        }
+        if not keep_from_time:
+            self._from_time = {
+                order_client_id: t
+                for order_client_id, t in self._from_time.items()
+                if order_client_id != order.client_id
+            }
 
     def update_on_existing_orders(self, existing_orders: typing.List[mango.Order]) -> None:
         """
@@ -224,7 +229,7 @@ class OrderTrackerCancelAll:
                 f' {is_in_book}{create_order}'
             )
             if is_in_book:
-                self.remove_from_orders_to_be_canceled(create_order)
+                self.remove_from_orders_to_be_canceled(create_order, keep_from_time=True)
                 self.append_to_orders_to_be_canceled_from_book(create_order)
                 moved_orders.append(create_order)
 
@@ -282,7 +287,7 @@ class OrderTrackerCancelAll:
         before the most current cancel that happened before the moved order.
         """
         self._logger.info(
-            f'Updating latest cancel all based on count(moved_orders): {len(moved_orders)}'
+            f'Updating latest cancel all based on count(moved_orders): {moved_orders}'
         )
         order_times: typing.List[float] = []
         for moved_order in moved_orders:
@@ -291,6 +296,7 @@ class OrderTrackerCancelAll:
                 for order_client_id, t in self._from_time.items()
                 if order_client_id == moved_order.client_id
             ]
+            self._logger.info(f'Timestamps of {moved_order} is {order_time}')
             if order_time:
                 order_times.append(order_time[0])
             if len(order_time) > 1:
@@ -307,7 +313,9 @@ class OrderTrackerCancelAll:
         # latest confirmed cancel
         latest_cancel_all = 0 if not cancel_timestamps else max(cancel_timestamps)
 
-        self._logger.info(f'Removing orders with based on timestamps: {latest_cancel_all}')
+        self._logger.info(
+            f'Removing orders with based on timestamps: {latest_cancel_all}, {moved_orders}'
+        )
 
         # Cancel everything prior to latest_cancel_all
         for order_client_id, t in list(self._from_time.items()):
