@@ -203,7 +203,8 @@ class OrderTracker:
     def update_on_reconcile(
         self,
         to_place: typing.Optional[typing.List[mango.Order]] = None,
-        to_cancel: typing.Optional[typing.List[mango.Order]] = None
+        to_cancel: typing.Optional[typing.List[mango.Order]] = None,
+        timestamp: int = None
     ) -> None:
         """
         This method updates the current state of the orders based on reconciled orders.
