@@ -119,23 +119,26 @@ def collect_positions(
         cfg: Configuration,
         context: mango.Context,
         slots: Sequence[mango.AccountSlot]
-) -> Tuple[Dict[str, Decimal], Dict[str, Decimal]]:
+) -> Tuple[Dict[str, Decimal], Dict[str, Decimal], Dict[str, Decimal]]:
     """Collects perp positions."""
 
     prices = {}
     positions = defaultdict(Decimal)
+    unsettled_positions = defaultdict(Decimal)
     for slot in slots:
         if slot.perp_account is not None:
 
             symbol = slot.base_instrument.name
             price = get_price(context, symbol, cfg)
             position = slot.perp_account.base_token_value.value
-
+            notional_size = position * price
+            unsettled_balance = notional_size + slot.perp_account.quote_position_raw
             positions[symbol] += position
-            positions[slot.quote_token_bank.token.name] -= position * price
+            positions[slot.quote_token_bank.token.name] += slot.perp_account.quote_position_raw
+            unsettled_positions[slot.quote_token_bank.token.name] += unsettled_balance
             prices[symbol] = price
 
-    return positions, prices
+    return positions, unsettled_positions, prices
 
 
 class PhonyWallet:
@@ -245,7 +248,7 @@ def main(args):
                 for slot in account.slots_by_index
                 if slot is not None and slot.base_instrument.name in mango_symbols
             ]
-            positions, prices = collect_positions(cfg, context, slots)
+            positions, unsettled_positions, prices = collect_positions(cfg, context, slots)
 
             for slot in slots:
                 if slot is not None:
@@ -257,6 +260,7 @@ def main(args):
                         symbol=symbol,
                         price=price,
                         value=slot.net_value.value + orders[symbol] + positions[symbol],
+                        unsettled_value=unsettled_positions[symbol]
                     ))
 
         heartbeat_check_enabled(cfg)
