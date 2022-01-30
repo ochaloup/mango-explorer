@@ -50,6 +50,7 @@ def make_db_sink(cfg):
         Column('symbol', String),
         Column('value', String),
         Column('price', String),
+        Column('unsettled_value', String),
     )
     table.create(engine, checkfirst=True)
 
