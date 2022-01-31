@@ -14,6 +14,7 @@ key_file = "/srv/key/mango-explorer/mu1/HbpeWxfmtzdtBJEe71JVp6isfKHk6sxrpXhD6Ew9
 account_balances_heartbeat = "run/balances_collector_mango_rayusdc/heartbeat"
 
 [balance_collector]
-
+collection_interval_seconds = 1800
+heartbeat_enabled = false
 watch_markets = ["RAY/USDC"]
 stale_data_pauses_before_retry = 2
