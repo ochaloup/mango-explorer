@@ -4,6 +4,7 @@ base = "common.toml"
 
 [solana]
 
+cluster_url = "http://127.0.0.1:8083/"
 address = "9pWVzCbuM1EnVRDqjUUWjEL3bV6qWLSxDfx7FtQNwUyL"
 key_file = "/srv/key/mango-explorer/mu1/9pWVzCbuM1EnVRDqjUUWjEL3bV6qWLSxDfx7FtQNwUyL.json"
 
