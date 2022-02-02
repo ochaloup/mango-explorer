@@ -1,6 +1,5 @@
 """
 Calculates simple combinations of prices.
-
 """
 
 from typing import Dict
@@ -25,14 +24,20 @@ def calculate_aggregate_price(
     """
     Calculates
     result = alpha_1(FTX - beta(EWMA(FTX) - EWMA(PC))) + alpha_2(KRK - beta(EWMA(KRK) - EWMA(PC)) +
+
+    The result can be interpreted as a linear combination of oracle adjusted prices.
+    Where each oracle price is adjusted by the EWMA difference between oracle and book price.
+
+    Note: the oracle data and book data might be out of sync in terms of latencies. We are
+    assuming that these average out in the EWMA!!!
     """
     return sum(
-        weights[source_name] * (
-            price.mid_price - ewma_weight * (
-                prices_oracle_ewma[source_name].latest - price_center_ewma.latest
+        weights[oracle_name] * (
+            oracle_price.mid_price - ewma_weight * (
+                prices_oracle_ewma[oracle_name].latest - price_center_ewma.latest
             )
         )
-        for source_name, price in oracle_prices.items()
+        for oracle_name, oracle_price in oracle_prices.items()
     )
 
 
@@ -58,6 +63,26 @@ class FairPriceModel(ValueModel[MarketMakerConfiguration]):
         self.ewma_weight = cfg.ewma_weight
 
     def eval(self, model_state: ModelState):
+        """
+        The resulting FP is weighted average between book and oracle price adjusted prices.
+        FP = (
+            pcd_coef * PCD
+            +
+            (1-pcd_coef) * (
+                price_weight_1 * (oracle_1 - beta(EWMA(oracle_1) - EWMA(PCD)))
+                +
+                price_weight_2 * (oracle_2 - beta(EWMA(oracle_2) - EWMA(PCD))
+                + ...
+            )
+        )
+
+        NOTE: TO SWITCH OFF PCD (BOOK PRICE) COMPLETELY SET IN CFG:
+        sum(price_weights) = 1
+        ewma_weight = 0
+            -> The ewma's will be still calculated, but not effectively used.
+               To switch off the calculation too, set
+                ewma_halflife = 0
+        """
 
         price_center = model_state.values.price_center
 
@@ -88,7 +113,7 @@ class FairPriceModel(ValueModel[MarketMakerConfiguration]):
         # Originally in the email thread we had
         # FP = EWMA(PC) + FTX - EWMA(FTX)
         # respectively
-        # FP = alpha_1(FTX - (EWMA(FTX) - EWMA(PC))) + alpha_2(KRK - (EWMA(KRK) - EWMA(PC))
+        # FP = alpha_1(FTX - beta(EWMA(FTX) - EWMA(PC))) + alpha_2(KRK - beta(EWMA(KRK) - EWMA(PC))
         fair_price = price_aggregated + self.pcd_coef * price_center
 
         # PA = price aggregated, PC = price center
