@@ -31,6 +31,7 @@ SQLAlchemy = "^1.4.27"
 psycopg2 = "^2.9.2"
 toml = "0.10.2"
 simplejson = "^3.17.6"
+freezegun = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.7"
