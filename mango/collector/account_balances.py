@@ -158,12 +158,16 @@ class PhonyWallet:
 def override_args(cfg: Configuration, args: Arguments):
     args.cluster_url = [mango.ClusterUrlData(cfg.solana.cluster_url)]
     args.stale_data_pause_before_retry = cfg.balance_collector.stale_data_pauses_before_retry
-    # args.cluster_name = "mainnet"
 
 
 def heartbeat_check_enabled(cfg: Configuration):
     if cfg.balance_collector.heartbeat_enabled:
         heartbeat(cfg.paths.account_balances_heartbeat)
+
+
+def dummy_sleep(pause: int):
+    for i in range(pause):
+        sleep(1)
 
 
 def main(args):
@@ -270,7 +274,7 @@ def main(args):
 
         heartbeat_check_enabled(cfg)
         LOGGER.info(f'Sinked order positions for Mango Accounts: {[account.account_info for account in mango_accounts]}')
-        sleep(cfg.balance_collector.collection_interval_seconds)
+        dummy_sleep(cfg.balance_collector.collection_interval_seconds)
 
 
 if __name__ == '__main__':
