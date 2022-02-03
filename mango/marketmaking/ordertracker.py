@@ -210,6 +210,7 @@ class OrderTracker:
         This method updates the current state of the orders based on reconciled orders.
         """
         to_place = to_place if to_place is not None else []
+        to_place = [order for order in to_place if order.order_type != mango.OrderType.IOC]
         to_cancel = to_cancel if to_cancel is not None else []
 
         # 1)
