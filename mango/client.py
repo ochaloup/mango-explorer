@@ -19,18 +19,20 @@ import logging
 import requests
 import time
 import typing
+import asyncio
+import threading
 
 from base64 import b64decode
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from collections.abc import Mapping
 from collections import deque
-from concurrent.futures import Executor, ThreadPoolExecutor
 from decimal import Decimal
 from solana.blockhash import Blockhash, BlockhashCache
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
+from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment, Processed, Finalized
 from solana.rpc.providers.http import HTTPProvider
 from solana.rpc.types import DataSliceOpts, MemcmpOpts, RPCMethod, RPCResponse, TokenAccountOpts, TxOpts
@@ -317,17 +319,21 @@ class NullTransactionStatusCollector(TransactionStatusCollector):
 
 
 class TransactionWatcher:
-    def __init__(self, client: Client, slot_holder: SlotHolder, signature: str, collector: TransactionStatusCollector):
+    def __init__(self, async_client: AsyncClient, slot_holder: SlotHolder, signature: str, collector: TransactionStatusCollector):
         self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
-        self.client: Client = client
+        self.async_client: AsyncClient = async_client
         self.slot_holder: SlotHolder = slot_holder
         self.signature: str = signature
         self.collector = collector
 
-    def report_on_transaction(self) -> None:
+    async def report_on_transaction(self) -> None:
         started_at: datetime = datetime.now()
         for pause in [0.1, 0.2, 0.3, 0.4, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]:
-            transaction_response = self.client.get_signature_statuses([self.signature])
+            try:
+                transaction_response = await self.async_client.get_signature_statuses([self.signature])
+            except:
+                self._logger.exception(f"Cannot get status of transaction {self.signature}")
+                raise
             if "result" in transaction_response and "value" in transaction_response["result"]:
                 [status] = transaction_response["result"]["value"]
                 if status is not None:
@@ -368,7 +374,7 @@ class TransactionWatcher:
                     self._logger.info(
                         f"Transaction {self.signature} reached confirmation status '{confirmation_status}' in slot {slot} after {time_taken:.2f} seconds")
                     return
-            time.sleep(pause)
+            await asyncio.sleep(pause)
 
         delta = datetime.now() - started_at
         time_wasted_looking: float = delta.seconds + delta.microseconds / 1000000
@@ -614,10 +620,30 @@ class ClusterUrlData:
             self.ws = self.ws.replace("http:", "ws:", 1)
 
 
+# # A thread that will be capable to run a task within the asynch loop
+# # Adjusted from https://stackoverflow.com/questions/69161718/add-task-to-asyncio-loop-running-in-separate-thread
+#
+class ThreadedEventLoop(threading.Thread):
+    def __init__(self):
+        super().__init__()
+        self._loop = asyncio.new_event_loop()
+        self.daemon = True
+
+    async def exec_subscription(self, callback) -> None:
+        await callback()
+
+    def submit(self, callback):
+        asyncio.run_coroutine_threadsafe(self.exec_subscription(callback), self._loop)
+
+    def run(self) -> None:
+        self._loop.run_forever()
+
+
 class BetterClient:
-    def __init__(self, client: Client, name: str, cluster_name: str, commitment: Commitment, skip_preflight: bool, max_retries: int, encoding: str, blockhash_cache_duration: int, rpc_caller: CompoundRPCCaller, transaction_status_collector: TransactionStatusCollector = NullTransactionStatusCollector()) -> None:
+    def __init__(self, client: Client, async_client: AsyncClient, name: str, cluster_name: str, commitment: Commitment, skip_preflight: bool, max_retries: int, encoding: str, blockhash_cache_duration: int, rpc_caller: CompoundRPCCaller, transaction_status_collector: TransactionStatusCollector = NullTransactionStatusCollector()) -> None:
         self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
         self.compatible_client: Client = client
+        self.compatible_async_client: AsyncClient = async_client
         self.name: str = name
         self.cluster_name: str = cluster_name
         self.commitment: Commitment = commitment
@@ -626,7 +652,10 @@ class BetterClient:
         self.encoding: str = encoding
         self.blockhash_cache_duration: int = blockhash_cache_duration
         self.rpc_caller: CompoundRPCCaller = rpc_caller
-        self.executor: Executor = ThreadPoolExecutor()
+        # self.executor: Executor = ThreadPoolExecutor()
+        if self.compatible_async_client:
+            self.threaded_event_loop = ThreadedEventLoop()
+            self.threaded_event_loop.start()
         self.transaction_status_collector: TransactionStatusCollector = transaction_status_collector
 
     @staticmethod
@@ -645,18 +674,23 @@ class BetterClient:
             blockhash_cache = BlockhashCache(blockhash_cache_duration)
         client: Client = Client(endpoint=cluster_url.rpc, commitment=commitment, blockhash_cache=blockhash_cache)
         client._provider = provider
+        async_client: AsyncClient = AsyncClient(endpoint=cluster_url.rpc, commitment=commitment, blockhash_cache=blockhash_cache)
+        # async_client._provider = provider  # TODO: Jan-2022 compound provider needs to be async
 
         def __on_provider_change() -> None:
             if client.blockhash_cache:
                 # Clear out the blockhash cache on retrying
                 logging.debug("Replacing client blockhash cache.")
-                client.blockhash_cache = BlockhashCache(blockhash_cache_duration)
+                blockhash_cache_on_change = BlockhashCache(blockhash_cache_duration)
+                client.blockhash_cache = blockhash_cache_on_change
+                async_client.blockhash_cache = blockhash_cache_on_change
                 blockhash_resp = client.get_recent_blockhash(Finalized)
                 client._process_blockhash_resp(blockhash_resp, used_immediately=False)
+                async_client._process_blockhash_resp(blockhash_resp, used_immediately=False)
 
         provider.on_provider_change = __on_provider_change
 
-        return BetterClient(client, name, cluster_name, commitment, skip_preflight, max_retries, encoding, blockhash_cache_duration, provider, transaction_status_collector)
+        return BetterClient(client, async_client, name, cluster_name, commitment, skip_preflight, max_retries, encoding, blockhash_cache_duration, provider, transaction_status_collector)
 
     @property
     def cluster_rpc_url(self) -> str:
@@ -786,8 +820,8 @@ class BetterClient:
 
                 if signature != _STUB_TRANSACTION_SIGNATURE:
                     tx_reporter: TransactionWatcher = TransactionWatcher(
-                        self.compatible_client, self.rpc_caller.current.slot_holder, signature, self.transaction_status_collector)
-                    self.executor.submit(tx_reporter.report_on_transaction)
+                        self.compatible_async_client, self.rpc_caller.current.slot_holder, signature, self.transaction_status_collector)
+                    self.threaded_event_loop.submit(tx_reporter.report_on_transaction)
                 else:
                     self._logger.error("Could not get status for stub signature")
 

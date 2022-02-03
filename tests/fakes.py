@@ -31,7 +31,7 @@ class MockClient(mango.BetterClient):
     def __init__(self) -> None:
         rpc = mango.RPCCaller("fake", "http://localhost", "ws://localhost", -1, [], mango.SlotHolder(), mango.InstructionReporter())
         compound = mango.CompoundRPCCaller("fake", [rpc])
-        super().__init__(MockCompatibleClient(), "test", "local", Commitment("processed"),
+        super().__init__(MockCompatibleClient(), None, "test", "local", Commitment("processed"),
                          False, -1, "base64", 0, compound)
 
 
