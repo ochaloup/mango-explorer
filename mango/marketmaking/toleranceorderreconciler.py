@@ -42,7 +42,7 @@ from .reconciledorders import ReconciledOrders
 # * ModelState is ignored when matching.
 #
 class ToleranceOrderReconciler(OrderReconciler):
-    def __init__(self, price_tolerance: Decimal, quantity_tolerance: Decimal, ioc_order_wait_seconds: Decimal = Decimal(0)) -> None:
+    def __init__(self, price_tolerance: Decimal, quantity_tolerance: Decimal, ioc_order_wait_seconds: Decimal = Decimal(60)) -> None:
         super().__init__()
         self.price_tolerance: Decimal = price_tolerance
         self.quantity_tolerance: Decimal = quantity_tolerance
@@ -70,14 +70,16 @@ class ToleranceOrderReconciler(OrderReconciler):
                 if current_timestamp - latest_timestamp > self.ioc_order_wait_seconds:
                     outcomes.to_place.append(desired)
                     self.latest_taker_order_timestamps[desired.side] = current_timestamp
-
-            acceptable = self.find_acceptable_order(desired, remaining_existing_orders)
-            if acceptable is None:
-                outcomes.to_place += [desired]
+                else:
+                    outcomes.to_ignore += [desired]
             else:
-                outcomes.to_keep += [acceptable]
-                outcomes.to_ignore += [desired]
-                remaining_existing_orders.remove(acceptable)
+                acceptable = self.find_acceptable_order(desired, remaining_existing_orders)
+                if acceptable is None:
+                    outcomes.to_place += [desired]
+                else:
+                    outcomes.to_keep += [acceptable]
+                    outcomes.to_ignore += [desired]
+                    remaining_existing_orders.remove(acceptable)
 
         # By this point we have removed all acceptable existing orders, so those that remain
         # should be cancelled.
