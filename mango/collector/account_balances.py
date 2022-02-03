@@ -1,3 +1,4 @@
+from inspect import Arguments
 import logging
 from typing import Sequence, Dict, Tuple
 
@@ -12,6 +13,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, DateTime, String, MetaData
 import mango
 from mango.configuration import load_configuration
+from mango.arguments import parse_args as mango_parse_args
 from mango.types_ import Configuration
 from mango.heartbeat import heartbeat, heartbeat_init
 from mango.chkpcontextconf import ChkpContextConfiguration
@@ -24,17 +26,17 @@ LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)
 
 
-def parse_args(args=None):
+def parse_args():
 
     parser = ArgumentParser(
         description='Periodically collects and record balances'
         ' of all group tokens, SPL toknes and SOL in wallet'
     )
-    parser.add_argument('config', type=str, nargs=1, help='Which configuration to use')
+    parser.add_argument('config', type=str, help='Which configuration to use')
     mango.ContextBuilder.add_command_line_parameters(parser)
     mango.Wallet.add_command_line_parameters(parser)
 
-    return parser.parse_args(args)
+    return mango_parse_args(parser)
 
 
 def make_db_sink(cfg):
@@ -78,6 +80,7 @@ def get_price(context: mango.Context, symbol, cfg: Configuration):
         return oracle.fetch_price(context).mid_price
 
     except AttributeError:  # if the price cannot be fetched
+        LOGGER.error(f'Cannot load price for {symbol}')
         return None
 
 
@@ -152,9 +155,10 @@ class PhonyWallet:
         raise NotImplementedError('PhonyWallet has no secret_key')
 
 
-def override_args(cfg: Configuration, args):
+def override_args(cfg: Configuration, args: Arguments):
     args.cluster_url = [mango.ClusterUrlData(cfg.solana.cluster_url)]
     args.stale_data_pause_before_retry = cfg.balance_collector.stale_data_pauses_before_retry
+    # args.cluster_name = "mainnet"
 
 
 def heartbeat_check_enabled(cfg: Configuration):
@@ -164,7 +168,7 @@ def heartbeat_check_enabled(cfg: Configuration):
 
 def main(args):
 
-    cfg: Configuration = load_configuration(args.config[0])
+    cfg: Configuration = load_configuration(args.config)
     override_args(cfg, args)
     context: mango.Context = mango.ContextBuilder.from_command_line_parameters(args)
     context.cfg = ChkpContextConfiguration(
