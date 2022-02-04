@@ -30,6 +30,8 @@ stale_data_pauses_before_retry = 3
             "COPE/USD",
             "FTT/USD", "FTT-PERP",
             "AVAX/USD", "AVAX-PERP",
+            "LUNA-PERP",
+            "ADA-PERP",
             "BNB/USD", "BNB-PERP",
         ]
         PYTH = [
@@ -41,7 +43,8 @@ stale_data_pauses_before_retry = 3
             "MNDE-mSOL", "SOL-USDC", "xCOPE-USDC", "ETH-SRM", "SOL-USDC", "stSOL-USDC", "mSOL-RAY",
             "BTC-USDC", "RAY-USDC", "USDT-USDC", "SOL-USDT", "RAY-ETH", "SRM-USDC", "ETH-SOL",
             "SRM-USDT", "BTC-USDT", "ETH-USDC", "RAY-SOL", "COPE-USDC", "RAY-USDT", "BTC-SRM",
-            "LARIX-RAY", "mSOL-SOL", "SRM-SOL", "RAY-SRM", "ETH-USDT", "SOL-SDC", "mSOL-USDC"
+            "LARIX-RAY", "mSOL-SOL", "SRM-SOL", "RAY-SRM", "ETH-USDT", "SOL-SDC", "mSOL-USDC",
+            "LUNA-USDC",
         ]
         BINANCE_mid = [
             'PERPBTC', 'PERPBUSD', 'PERPUSDT',
@@ -50,7 +53,10 @@ stale_data_pauses_before_retry = 3
             'ETHEUR', 'ETHUSDT', 'ETHUSDC',
             'USDCUSDT',
             'SRMBTC', 'SRMBUSD', 'SRMUSDT',
-            'RAYBUSD', 'RAYUSDT'
+            'RAYBUSD', 'RAYUSDT',
+            "AVAXUSDT",
+            "LUNAUSDT",
+            "ADAUSDT",
         ]
         KRAKEN_mid = [
             'PERP/EUR', 'PERP/USD',
