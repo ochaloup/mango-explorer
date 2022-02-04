@@ -11,10 +11,8 @@ key_file = "/srv/key/mango-explorer/mu1/HbpeWxfmtzdtBJEe71JVp6isfKHk6sxrpXhD6Ew9
 
 [paths]
 
-account_balances_heartbeat = "run/balances_collector_mango_rayusdc/heartbeat"
+account_balances_heartbeat = "run/balances_collector_mango_ethperp/heartbeat"
 
 [balance_collector]
-collection_interval_seconds = 1800
-heartbeat_enabled = false
-watch_markets = ["RAY/USDC"]
+watch_markets = ["ETH-PERP"]
 stale_data_pauses_before_retry = 2
