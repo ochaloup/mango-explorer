@@ -116,8 +116,7 @@ class Collector:
                             self.record_observation(price, oracle_name, symbol)
                     except Exception:
                         # Using bare exception since some oracles "raise Exception"
-                        self.logger.warning(f'Failed fetching price for {oracle_name}, {symbol}.')
-                        self.logger.exception()
+                        self.logger.exception(f'Failed fetching price for {oracle_name}, {symbol}.')
             time.sleep(max(0, self.pause_duration - (time.time() - last_iteration)))
 
     def record_observation(self, price: Price, oracle_name: str, symbol: str) -> None:
