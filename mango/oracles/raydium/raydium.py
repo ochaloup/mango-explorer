@@ -25,6 +25,8 @@ def _get_from_url(url: str) -> typing.Dict:
     response_values = response.json()
     if ("success" not in response_values) or (not response_values["success"]):
         raise Exception(f"Failed to get from RAYDIUM URL: {url} - {response_values}")
+    if ("data" not in response_values) or (not response_values["data"]):
+        raise Exception(f"Response of RAYDIUM URL: {url} does not contain field 'data' - {response_values}")
     return response_values["data"]
 
 
