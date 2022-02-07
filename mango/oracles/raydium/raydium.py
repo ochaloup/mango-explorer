@@ -164,7 +164,8 @@ class RaydiumTradeCollectorProvider():
             "RAY-SRM": "Cm4MmknScg7qbKqytb1mM92xgDxv3TNXos4tKbBqTDy7",
             "ETH-USDT": "7dLVkUfBVfCGkFhSXDCq1ukM9usathSgS716t643iFGF",
             "SOL-SDC": "89pBeyUxduWdboHHShqwWavCrnckZu4SUPg7MZo1H6Na",
-            "mSOL-USDC": "6oGsL2puUgySccKzn9XA9afqF217LfxP5ocq4B3LWsjy"
+            "mSOL-USDC": "6oGsL2puUgySccKzn9XA9afqF217LfxP5ocq4B3LWsjy",
+            "LUNA-USDC": "HBTu8hNaoT3VyiSSzJYa8jwt9sDGKtJviSwFa11iXdmE",
         }
 
         if symbol not in symbols:
