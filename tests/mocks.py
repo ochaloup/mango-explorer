@@ -1,4 +1,3 @@
-from mango.tokenbank import TokenBank
 from .context import mango
 from .fakes import fake_account_info, fake_context, fake_seeded_public_key
 

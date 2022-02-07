@@ -131,6 +131,7 @@ class PollingModelStateBuilder(ModelStateBuilder):
     def __str__(self) -> str:
         return "« PollingModelStateBuilder »"
 
+
 # # 🥭 SerumPollingModelStateBuilder class
 #
 # Polls Solana and builds a `ModelState` for a `SerumMarket`
@@ -168,7 +169,7 @@ class SerumPollingModelStateBuilder(PollingModelStateBuilder):
         addresses: typing.List[PublicKey] = [
             self.group_address,
             self.cache_address,
-            self.account_address, # CHKP TODO removed this, why could not be left. Serum market does not have a Mango account but for purposes of the code likeness this could be left here?
+            self.account_address,
             self.open_orders_address,
             self.base_inventory_token_account.address,
             self.quote_inventory_token_account.address,
@@ -243,8 +244,6 @@ class SpotPollingModelStateBuilder(PollingModelStateBuilder):
         self.collateral_calculator: CollateralCalculator = SpotCollateralCalculator()
 
     def poll(self, context: mango.Context) -> ModelState:
-        time_poll_start = time.time()
-
         addresses: typing.List[PublicKey] = [
             self.group_address,
             self.cache_address,
@@ -295,7 +294,6 @@ class SpotPollingModelStateBuilder(PollingModelStateBuilder):
         orderbook: mango.OrderBook = self.market.parse_account_infos_to_orderbook(account_infos[3], account_infos[4])
 
         event_queue: mango.EventQueue = mango.SerumEventQueue.parse(account_infos[5])
-
 
         # CHKP addition
         # price: mango.Price = self.oracle.fetch_price(context)  # CHKP removal
