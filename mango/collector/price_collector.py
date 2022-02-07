@@ -214,25 +214,30 @@ def main(args: argparse.Namespace) -> None:
             oracle_name: str,
             symbol: str
         ) -> typing.Optional[mango.Oracle]:
-            market = context.market_lookup.find_by_symbol(symbol)
-            if market is None:
-                market = collections.namedtuple(
-                    'XXX',
-                    ['symbol', 'inventory_source']
-                )(symbol, InventorySource.ACCOUNT)
+            try:
+                market = context.market_lookup.find_by_symbol(symbol)
 
-            if oracle_name == 'FTX':
-                return FtxOracle(market, symbol.upper(), chkp_cfg)
-            elif oracle_name == 'PYTH':
-                pyth_oracle_provider = PythOracleProvider(context)
-                return pyth_oracle_provider.oracle_for_market(context, market)
-            elif oracle_name == 'RAYDIUM_trades':
-                raydium_oracle_provider = RaydiumTradeCollectorProvider()
-                return raydium_oracle_provider.trade_collector_for_market(context, market)
-            elif oracle_name == 'BINANCE_mid':
-                return BinanceOracle(market, symbol.upper(), chkp_cfg)
-            elif oracle_name == 'KRAKEN_mid':
-                return KrakenOracle(market, symbol.upper(), chkp_cfg)
+                if market is None:
+                    market = collections.namedtuple(
+                        'XXX',
+                        ['symbol', 'inventory_source']
+                    )(symbol, InventorySource.ACCOUNT)
+
+                if oracle_name == 'FTX':
+                    return FtxOracle(market, symbol.upper(), chkp_cfg)
+                elif oracle_name == 'PYTH':
+                    pyth_oracle_provider = PythOracleProvider(context)
+                    return pyth_oracle_provider.oracle_for_market(context, market)
+                elif oracle_name == 'RAYDIUM_trades':
+                    raydium_oracle_provider = RaydiumTradeCollectorProvider()
+                    return raydium_oracle_provider.trade_collector_for_market(context, market)
+                elif oracle_name == 'BINANCE_mid':
+                    return BinanceOracle(market, symbol.upper(), chkp_cfg)
+                elif oracle_name == 'KRAKEN_mid':
+                    return KrakenOracle(market, symbol.upper(), chkp_cfg)
+            except Exception as e:
+                LOGGER.error(f"Cannot find symbol {symbol} with oracle {oracle_name}")
+                raise e
 
             raise NotImplementedError(f'Oracle {oracle_name} is not yet implemented.')
 
