@@ -89,6 +89,7 @@ class ContextBuilder:
         parser.add_argument("--mango-program-address", type=PublicKey, default=None, help="Mango program address")
         parser.add_argument("--serum-program-address", type=PublicKey, default=None, help="Serum program address")
         parser.add_argument("--skip-preflight", default=False, action="store_true", help="Skip pre-flight checks")
+        parser.add_argument("--max-retries", default=-1, type=int, help="Number of attempts the RPC node runs to deliver a transaction to TPU")
         parser.add_argument("--commitment", type=str, default=None,
                             help="Commitment to use when sending transactions (can be 'finalized', 'confirmed' or 'processed')")
         parser.add_argument("--encoding", type=str, default=None,
@@ -124,6 +125,7 @@ class ContextBuilder:
         mango_program_address: typing.Optional[PublicKey] = args.mango_program_address
         serum_program_address: typing.Optional[PublicKey] = args.serum_program_address
         skip_preflight: bool = bool(args.skip_preflight)
+        max_retries: int = int(args.max_retries)
         commitment: typing.Optional[str] = args.commitment
         encoding: typing.Optional[str] = args.encoding
         blockhash_cache_duration: typing.Optional[int] = args.blockhash_cache_duration
@@ -145,7 +147,7 @@ class ContextBuilder:
             pause: Decimal = stale_data_pause_before_retry or Decimal("0.1")
             actual_stale_data_pauses_before_retry = [float(pause)] * retries
 
-        context: Context = ContextBuilder.build(name, cluster_name, cluster_urls, skip_preflight, commitment,
+        context: Context = ContextBuilder.build(name, cluster_name, cluster_urls, skip_preflight, max_retries, commitment,
                                                 encoding, blockhash_cache_duration, http_request_timeout,
                                                 actual_stale_data_pauses_before_retry,
                                                 group_name, group_address, mango_program_address,
@@ -162,7 +164,7 @@ class ContextBuilder:
     @staticmethod
     def from_group_name(context: Context, group_name: str) -> Context:
         return ContextBuilder.build(context.name, context.client.cluster_name, context.client.cluster_urls,
-                                    context.client.skip_preflight, context.client.commitment,
+                                    context.client.skip_preflight, context.client.max_retries, context.client.commitment,
                                     context.client.encoding, context.client.blockhash_cache_duration, None,
                                     context.client.stale_data_pauses_before_retry,
                                     group_name, None, None, None,
@@ -179,6 +181,7 @@ class ContextBuilder:
                                                                [cluster_url],
                                                                context.client.commitment,
                                                                context.client.skip_preflight,
+                                                               context.client.max_retries,
                                                                context.client.encoding,
                                                                context.client.blockhash_cache_duration,
                                                                -1,
@@ -198,6 +201,7 @@ class ContextBuilder:
                                                                [cluster_url],
                                                                context.client.commitment,
                                                                context.client.skip_preflight,
+                                                               context.client.max_retries,
                                                                context.client.encoding,
                                                                context.client.blockhash_cache_duration,
                                                                -1,
@@ -211,6 +215,7 @@ class ContextBuilder:
     def build(name: typing.Optional[str] = None, cluster_name: typing.Optional[str] = None,
               cluster_urls: typing.Optional[typing.Sequence[ClusterUrlData]] = None,
               skip_preflight: bool = False,
+              max_retries: int = -1,
               commitment: typing.Optional[str] = None, encoding: typing.Optional[str] = None,
               blockhash_cache_duration: typing.Optional[int] = None,
               http_request_timeout: typing.Optional[float] = None,
@@ -241,6 +246,7 @@ class ContextBuilder:
         actual_blockhash_cache_duration: int = blockhash_cache_duration or 0
         actual_stale_data_pauses_before_retry: typing.Sequence[float] = stale_data_pauses_before_retry or []
         actual_http_request_timeout: float = http_request_timeout or -1
+        actual_max_retries: int = int(max_retries)
 
         actual_cluster_urls: typing.Optional[typing.Sequence[ClusterUrlData]] = cluster_urls
         if actual_cluster_urls is None or len(actual_cluster_urls) == 0:
@@ -336,4 +342,4 @@ class ContextBuilder:
                 devnet_serum_market_lookup])
         market_lookup: MarketLookup = all_market_lookup
 
-        return Context(actual_name, actual_cluster, actual_cluster_urls, actual_skip_preflight, actual_commitment, actual_encoding, actual_blockhash_cache_duration, actual_http_request_timeout, actual_stale_data_pauses_before_retry, actual_program_address, actual_serum_program_address, actual_group_name, actual_group_address, actual_gma_chunk_size, actual_gma_chunk_pause, instrument_lookup, market_lookup, transaction_status_collector)
+        return Context(actual_name, actual_cluster, actual_cluster_urls, actual_skip_preflight, actual_max_retries, actual_commitment, actual_encoding, actual_blockhash_cache_duration, actual_http_request_timeout, actual_stale_data_pauses_before_retry, actual_program_address, actual_serum_program_address, actual_group_name, actual_group_address, actual_gma_chunk_size, actual_gma_chunk_pause, instrument_lookup, market_lookup, transaction_status_collector)

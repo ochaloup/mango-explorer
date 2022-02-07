@@ -615,13 +615,14 @@ class ClusterUrlData:
 
 
 class BetterClient:
-    def __init__(self, client: Client, name: str, cluster_name: str, commitment: Commitment, skip_preflight: bool, encoding: str, blockhash_cache_duration: int, rpc_caller: CompoundRPCCaller, transaction_status_collector: TransactionStatusCollector = NullTransactionStatusCollector()) -> None:
+    def __init__(self, client: Client, name: str, cluster_name: str, commitment: Commitment, skip_preflight: bool, max_retries: int, encoding: str, blockhash_cache_duration: int, rpc_caller: CompoundRPCCaller, transaction_status_collector: TransactionStatusCollector = NullTransactionStatusCollector()) -> None:
         self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
         self.compatible_client: Client = client
         self.name: str = name
         self.cluster_name: str = cluster_name
         self.commitment: Commitment = commitment
         self.skip_preflight: bool = skip_preflight
+        self.max_retries: int = max_retries
         self.encoding: str = encoding
         self.blockhash_cache_duration: int = blockhash_cache_duration
         self.rpc_caller: CompoundRPCCaller = rpc_caller
@@ -629,7 +630,7 @@ class BetterClient:
         self.transaction_status_collector: TransactionStatusCollector = transaction_status_collector
 
     @staticmethod
-    def from_configuration(name: str, cluster_name: str, cluster_urls: typing.Sequence[ClusterUrlData], commitment: Commitment, skip_preflight: bool, encoding: str, blockhash_cache_duration: int, http_request_timeout: float, stale_data_pauses_before_retry: typing.Sequence[float], instruction_reporter: InstructionReporter, transaction_status_collector: TransactionStatusCollector) -> "BetterClient":
+    def from_configuration(name: str, cluster_name: str, cluster_urls: typing.Sequence[ClusterUrlData], commitment: Commitment, skip_preflight: bool, max_retries: int, encoding: str, blockhash_cache_duration: int, http_request_timeout: float, stale_data_pauses_before_retry: typing.Sequence[float], instruction_reporter: InstructionReporter, transaction_status_collector: TransactionStatusCollector) -> "BetterClient":
         slot_holder: SlotHolder = SlotHolder()
         rpc_callers: typing.List[RPCCaller] = []
         cluster_url: ClusterUrlData
@@ -655,7 +656,7 @@ class BetterClient:
 
         provider.on_provider_change = __on_provider_change
 
-        return BetterClient(client, name, cluster_name, commitment, skip_preflight, encoding, blockhash_cache_duration, provider, transaction_status_collector)
+        return BetterClient(client, name, cluster_name, commitment, skip_preflight, max_retries, encoding, blockhash_cache_duration, provider, transaction_status_collector)
 
     @property
     def cluster_rpc_url(self) -> str:
@@ -768,13 +769,16 @@ class BetterClient:
             try:
                 proper_commitment: Commitment = opts.preflight_commitment
                 proper_skip_preflight = opts.skip_preflight
+                proper_max_retries = opts.max_retries
                 if proper_commitment == UnspecifiedCommitment:
                     proper_commitment = self.commitment
                     proper_skip_preflight = self.skip_preflight
+                    proper_max_retries = self.max_retries if self.max_retries >= 0 else None
 
                 proper_opts = TxOpts(preflight_commitment=proper_commitment,
                                      skip_confirmation=opts.skip_confirmation,
-                                     skip_preflight=proper_skip_preflight)
+                                     skip_preflight=proper_skip_preflight,
+                                     max_retries=proper_max_retries)
 
                 response = self.compatible_client.send_transaction(transaction, *signers, opts=proper_opts)
                 signature: str = str(response["result"])

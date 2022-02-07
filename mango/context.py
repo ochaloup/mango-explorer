@@ -41,7 +41,7 @@ class Context:
 
     cfg: ChkpContextConfiguration = None
 
-    def __init__(self, name: str, cluster_name: str, cluster_urls: typing.Sequence[ClusterUrlData], skip_preflight: bool,
+    def __init__(self, name: str, cluster_name: str, cluster_urls: typing.Sequence[ClusterUrlData], skip_preflight: bool, max_retries: int,
                  commitment: str, encoding: str, blockhash_cache_duration: int, http_request_timeout: float,
                  stale_data_pauses_before_retry: typing.Sequence[float], mango_program_address: PublicKey,
                  serum_program_address: PublicKey, group_name: str, group_address: PublicKey,
@@ -52,7 +52,7 @@ class Context:
         instruction_reporter: InstructionReporter = CompoundInstructionReporter.from_addresses(
             mango_program_address, serum_program_address)
         self.client: BetterClient = BetterClient.from_configuration(name, cluster_name, cluster_urls, Commitment(
-            commitment), skip_preflight, encoding, blockhash_cache_duration, http_request_timeout, stale_data_pauses_before_retry, instruction_reporter, transaction_status_collector)
+            commitment), skip_preflight, max_retries, encoding, blockhash_cache_duration, http_request_timeout, stale_data_pauses_before_retry, instruction_reporter, transaction_status_collector)
         self.mango_program_address: PublicKey = mango_program_address
         self.serum_program_address: PublicKey = serum_program_address
         self.group_name: str = group_name
