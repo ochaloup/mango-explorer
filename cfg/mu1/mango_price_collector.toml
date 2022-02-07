@@ -40,10 +40,11 @@ stale_data_pauses_before_retry = 3
             "COPE/USD",
         ]
         RAYDIUM_trades = [
-            "MNDE-mSOL", "SOL-USDC", "xCOPE-USDC", "ETH-SRM", "SOL-USDC", "stSOL-USDC", "mSOL-RAY",
-            "BTC-USDC", "RAY-USDC", "USDT-USDC", "SOL-USDT", "RAY-ETH", "SRM-USDC", "ETH-SOL",
-            "SRM-USDT", "BTC-USDT", "ETH-USDC", "RAY-SOL", "COPE-USDC", "RAY-USDT", "BTC-SRM",
-            "LARIX-RAY", "mSOL-SOL", "SRM-SOL", "RAY-SRM", "ETH-USDT", "SOL-SDC", "mSOL-USDC"
+#            "MNDE-mSOL", "ETH-SRM", "stSOL-USDC", "RAY-ETH", "xCOPE-USDC", "RAY-SOL",
+#            "BTC-SRM", "RAY-SRM", "SRM-SOL","LARIX-RAY",  "mSOL-RAY",
+            "SOL-USDC", "BTC-USDC", "RAY-USDC", "ETH-USDC", "SRM-USDC",
+            "SOL-USDT", "BTC-USDT", "RAY-USDT", "ETH-USDT", "SRM-USDT",
+            "ETH-SOL", "USDT-USDC", "COPE-USDC", "mSOL-SOL", "mSOL-USDC"
         ]
         BINANCE_mid = [
             'PERPBTC', 'PERPBUSD', 'PERPUSDT',
