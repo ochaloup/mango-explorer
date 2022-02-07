@@ -202,7 +202,7 @@ def main(args: argparse.Namespace) -> None:
         cfg = load_configuration(args.config[0])
         LOGGER.warning(f'Configuration loaded: {cfg}')
         heartbeat_init(cfg.paths.price_collector_heartbeat)
-        args.cluster_url = [cfg.solana.cluster_url]
+        args.cluster_url = [mango.ClusterUrlData(cfg.solana.cluster_url)]
         args.stale_data_pause_before_retry = cfg.price_collector.stale_data_pauses_before_retry
         context = mango.ContextBuilder.from_command_line_parameters(args)
         context.cfg = ChkpContextConfiguration(
