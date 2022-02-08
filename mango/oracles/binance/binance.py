@@ -37,11 +37,11 @@ def _binance_get_from_url(symbol: str) -> typing.Dict:
     response_values = response.json()
 
     if not response.ok:
-        raise Exception(f"Failed to get from FTX URL: {url}/{symbol}")
+        raise Exception(f"Failed to get from Binance URL: {url}/{symbol}")
 
     if not response_values:
         raise Exception(
-            f"Failed to get symbol {symbol} from FTX URL: {url}/{symbol} - {response_values}"
+            f"Failed to get symbol {symbol} from Binance URL: {url}/{symbol} - {response_values}"
         )
     return response_values
 
