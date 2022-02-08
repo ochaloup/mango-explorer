@@ -15,4 +15,6 @@ account_balances_heartbeat = "run/balances_collector_mango_fttusdc/heartbeat"
 [balance_collector]
 
 watch_markets = ["FTT/USDC"]
+collection_interval_seconds = 1800
+heartbeat_enabled = false
 stale_data_pauses_before_retry = 2
