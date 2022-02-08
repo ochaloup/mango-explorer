@@ -28,6 +28,7 @@ from .orderreconciler import OrderReconciler
 from .orderchain.chain import Chain
 from .modelvalues import ModelValuesGraph
 from .ordertracker import OrderTracker
+from .ordertrackercancelall import OrderTrackerCancelAll
 
 
 # # 🥭 MarketMaker class
@@ -42,7 +43,7 @@ class MarketMaker:
                  model_values_graph: ModelValuesGraph,  # CHKP addition
                  order_reconciler: OrderReconciler,
                  redeem_threshold: typing.Optional[Decimal],
-                 order_tracker: OrderTracker) -> None:
+                 order_tracker: typing.Union[OrderTracker, OrderTrackerCancelAll]) -> None:
         self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
         self.wallet: mango.Wallet = wallet
         self.market: mango.Market = market
@@ -74,7 +75,11 @@ class MarketMaker:
             # CHKP additions
             # desired_orders = self.desired_orders_chain.process(context, model_state)
             existing_orders = model_state.current_orders()
-            self.order_tracker.update_on_existing_orders(existing_orders)
+            self.order_tracker.update_on_existing_orders(existing_orders, time.time())
+            if isinstance(self.order_tracker, OrderTrackerCancelAll):
+                self._logger.info(
+                    f'Delay between place and book is {self.order_tracker.delay_metric.latest}'
+                )
             self.model_values_graph.update_values(model_state, existing_orders)
 
             desired_orders = self.desired_orders_chain.process(

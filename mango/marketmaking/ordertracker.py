@@ -142,7 +142,11 @@ class OrderTracker:
             if time_ >= t + self.threshold_life_in_flight:
                 self.remove_from_orders_to_be_canceled(order)
 
-    def update_on_existing_orders(self, existing_orders: typing.List[mango.Order]) -> None:
+    def update_on_existing_orders(
+        self,
+        existing_orders: typing.Sequence[mango.Order],
+        timestamp: float = time.time()
+    ) -> None:
         """
         Sometimes there might be order that gets slipped.
         For example order that we cancel before we notice it in the book.

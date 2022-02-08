@@ -1,4 +1,5 @@
 from decimal import Decimal
+import math
 
 from mango.marketmaking.ordertrackercancelall import OrderTrackerCancelAll
 from mango.types_ import MarketMakerConfiguration
@@ -34,6 +35,8 @@ def test_order_tracker() -> None:
 
     assert not tracker.all_orders
     assert not tracker._from_time
+    assert not tracker._from_time_longterm
+    assert tracker.delay_metric.latest is None
 
     # send create order
     order_1 = mango.Order(price=Decimal('0.9'), quantity=Decimal(1), id=1, client_id=1, side=mango.Side.BUY, order_type=mango.OrderType.LIMIT, owner=SYSTEM_PROGRAM_ADDRESS)
@@ -44,6 +47,8 @@ def test_order_tracker() -> None:
     assert tracker.orders_to_be_in_book == [order_1]
     assert not tracker.orders_to_be_canceled_from_book
     assert len(tracker._from_time) == 1
+    assert len(tracker._from_time_longterm) == 1
+    assert tracker.delay_metric.latest is None
 
     # the order is still not in the book
     tracker.update_on_orderbook(model_state)
@@ -53,6 +58,8 @@ def test_order_tracker() -> None:
     assert tracker.orders_to_be_in_book == [order_1]
     assert not tracker.orders_to_be_canceled_from_book
     assert len(tracker._from_time) == 1
+    assert len(tracker._from_time_longterm) == 1
+    assert tracker.delay_metric.latest is None
 
     # send another two orders and cancel first one
     order_2 = mango.Order(price=Decimal('1.9'), quantity=Decimal(1), id=2, client_id=2, side=mango.Side.BUY, order_type=mango.OrderType.LIMIT, owner=SYSTEM_PROGRAM_ADDRESS)
@@ -64,15 +71,19 @@ def test_order_tracker() -> None:
     assert tracker.orders_to_be_in_book == [order_2, order_3]
     assert not tracker.orders_to_be_canceled_from_book
     assert len(tracker._from_time) == 3
+    assert len(tracker._from_time_longterm) == 3
+    assert tracker.delay_metric.latest is None
 
     # update_on_existing_orders does nothing
-    tracker.update_on_existing_orders([order_2])
+    tracker.update_on_existing_orders([order_2], timestamp=110.5)
 
     assert not tracker.orders_in_book
     assert tracker.orders_to_be_canceled == [order_1]
     assert tracker.orders_to_be_in_book == [order_2, order_3]
     assert not tracker.orders_to_be_canceled_from_book
     assert len(tracker._from_time) == 3
+    assert len(tracker._from_time_longterm) == 2
+    assert math.isclose(tracker.delay_metric.latest, 0.5, abs_tol=0.01)
 
     # order 2 and 3 appears in the book on existing orders
     # order 1, since orders 2 and 3 were send with cancel
@@ -98,6 +109,8 @@ def test_order_tracker() -> None:
     assert not tracker.orders_to_be_in_book
     assert not tracker.orders_to_be_canceled_from_book
     assert len(tracker._from_time) == 2
+    assert len(tracker._from_time_longterm) == 2
+    assert math.isclose(tracker.delay_metric.latest, 0.5, abs_tol=0.01)
 
     # reconcile with nothing
     tracker.update_on_reconcile(timestamp=111.)
@@ -107,6 +120,8 @@ def test_order_tracker() -> None:
     assert not tracker.orders_to_be_in_book
     assert not tracker.orders_to_be_canceled_from_book
     assert len(tracker._from_time) == 2
+    assert len(tracker._from_time_longterm) == 2
+    assert math.isclose(tracker.delay_metric.latest, 0.5, abs_tol=0.01)
 
     # cancel orders, create new ones
     order_4 = mango.Order(price=Decimal('1.9'), quantity=Decimal(1), id=4, client_id=4, side=mango.Side.BUY, order_type=mango.OrderType.LIMIT, owner=SYSTEM_PROGRAM_ADDRESS)
@@ -118,6 +133,8 @@ def test_order_tracker() -> None:
     assert tracker.orders_to_be_in_book == [order_4, order_5]
     assert tracker.orders_to_be_canceled_from_book == [order_2, order_3]
     assert len(tracker._from_time) == 4
+    assert len(tracker._from_time_longterm) == 4
+    assert math.isclose(tracker.delay_metric.latest, 0.5, abs_tol=0.01)
 
     # show order_4 and 5 in book with delay so that orders 2 and 3 disapper from tracker
     model_state = fake_model_state(
@@ -135,3 +152,5 @@ def test_order_tracker() -> None:
     assert not tracker.orders_to_be_in_book
     assert not tracker.orders_to_be_canceled_from_book
     assert len(tracker._from_time) == 2
+    assert len(tracker._from_time_longterm) == 4
+    assert math.isclose(tracker.delay_metric.latest, 0.5, abs_tol=0.01)

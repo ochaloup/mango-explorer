@@ -1,3 +1,5 @@
+import datetime
+import decimal
 import logging
 import typing
 import time
@@ -5,6 +7,7 @@ import time
 import mango
 from ..modelstate import ModelState
 from mango.types_ import MarketMakerConfiguration
+from mango.marketmaking.ewma import EWMA
 
 
 def _is_in_book(order: mango.Order, book_side: typing.Sequence[mango.Order]) -> bool:
@@ -105,7 +108,18 @@ class OrderTrackerCancelAll:
         # {client-id: timestamp}
         self._from_time: typing.Dict[int, float] = {}
 
-        # Currently has no effect.
+        # Similar to self._from_time, with a difference of keeping these for much longer period
+        # than self._from_time. This is used for monitoring the time it takes to get from
+        # placing order (within our SW) to observing the order in the book (within our SW).
+        # Not all orders are observed.
+        # These are updated on existing orders and reconcile (no need to do it elsewhere).
+        self._from_time_longterm: typing.Dict[int, float] = {}
+        # Metric that calculates and keeps the delays.
+        self.delay_metric: EWMA = EWMA(decimal.Decimal(300))
+        # Timedelta for how long we are keeping information about orders.
+        self._timedelta_to_monitor_delay = 300
+
+        # Currently, has no effect.
         self.threshold_life_in_flight: int = cfg.threshold_life_in_flight
 
     @property
@@ -127,6 +141,8 @@ class OrderTrackerCancelAll:
     def append_to_orders_to_be_in_book(self, order: mango.Order, timestamp: float) -> None:
         self.orders_to_be_in_book.append(order)
         self._from_time[order.client_id] = timestamp
+
+        self._from_time_longterm[order.client_id] = timestamp
 
     def append_to_orders_in_book(self, order: mango.Order) -> None:
         self.orders_in_book.append(order)
@@ -168,14 +184,47 @@ class OrderTrackerCancelAll:
                 if order_client_id != order.client_id
             }
 
-    def update_on_existing_orders(self, existing_orders: typing.List[mango.Order]) -> None:
+    def update_on_existing_orders(
+        self,
+        existing_orders: typing.Sequence[mango.Order],
+        timestamp: float = time.time()
+    ) -> None:
         """
-        Information received here is redundant.
-        Method is kept for compatibility with code that might use other order trackers.
+        In comparison to other order tracker classes the information received here is mostly
+        redundant. Method is kept mainly for compatibility with code that might use other
+        order trackers.
 
         The logic that might be here is actually contained within the self.update_on_orderbook.
+
+        Only logic here is the measuring of delays between order creation and observing
+        the orders in book.
         """
-        pass
+        self._update_from_time_longterm(existing_orders, timestamp)
+
+    def _update_from_time_longterm(
+        self,
+        existing_orders: typing.Sequence[mango.Order],
+        timestamp: float = time.time()
+    ) -> None:
+        for order in existing_orders:
+            # 1) We look for timestamp when an order was created.
+            # 2) If missing, the order was already processed
+            #       (we are assuming that it won't take more than self._timedelta_to_monitor_delay
+            #       to get to the book).
+            # 3) Add the order to self.delay_metric.
+            # 4) Remove order from self._from_time_longterm
+            # 5) Remove old order from self._from_time_longterm
+            if order.client_id in self._from_time_longterm:
+                place_timestamp = self._from_time_longterm[order.client_id]
+                time_from_place = timestamp - place_timestamp
+                self.delay_metric.update(
+                    decimal.Decimal(time_from_place),
+                    datetime.datetime.fromtimestamp(timestamp)
+                )
+                del self._from_time_longterm[order.client_id]
+        for order_client_id, place_timestamp in list(self._from_time_longterm.items()):
+            if timestamp - place_timestamp > self._timedelta_to_monitor_delay:
+                del self._from_time_longterm[order_client_id]
 
     def update_on_orderbook(self, model_state: ModelState) -> None:
         """
@@ -354,5 +403,8 @@ class OrderTrackerCancelAll:
     orders_to_be_canceled_from_book: {self.orders_to_be_canceled_from_book}
     cancel_all_timestamps: {self.cancel_all_timestamps}
     _from_time: {self._from_time}
-    threshold_life_in_flight: {self.threshold_life_in_flight}
+    threshold_life_in_flight: {self.threshold_life_in_flight},
+    _from_time_longterm: {self._from_time_longterm},
+    delay_metric: {self.delay_metric},
+    _timedelta_to_monitor_delay: {self._timedelta_to_monitor_delay},
 ]'''
