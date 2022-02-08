@@ -1,0 +1,33 @@
+[config]
+
+base = "common.toml"
+
+[solana]
+
+address = "DXduaJGTVVZLeTy75wDu3CkbEzsA3jFBaTHRvF4UoTyz"
+
+[paths]
+# paths are automatically prefixed by PREFIX environment variable
+price_collector_heartbeat = 'run/mango_price_collector/heartbeat'
+
+[price_collector]
+server_name = "sbg1"
+pause_duration = 5
+# number of observation per file
+max_number_of_observations = 1000
+stale_data_pauses_before_retry = 3
+
+        # symbols are pairs of oracle name and symbols queried from given oracle.
+        [price_collector.symbols]
+        FTX = []
+        PYTH = []
+        RAYDIUM_trades = [
+            "MNDE-mSOL", "ETH-SRM", "stSOL-USDC", "RAY-ETH", "xCOPE-USDC", "RAY-SOL",
+            "BTC-SRM", "RAY-SRM", "SRM-SOL","LARIX-RAY",  "mSOL-RAY",
+#            "SOL-USDC", "BTC-USDC", "RAY-USDC", "ETH-USDC", "SRM-USDC",
+#            "SOL-USDT", "BTC-USDT", "RAY-USDT", "ETH-USDT", "SRM-USDT",
+#            "ETH-SOL", "USDT-USDC", "COPE-USDC",
+            "mSOL-SOL", "mSOL-USDC"
+        ]
+        BINANCE_mid = []
+        KRAKEN_mid = []
