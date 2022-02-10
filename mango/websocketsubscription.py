@@ -57,6 +57,7 @@ class WebSocketSubscription(Disposable, typing.Generic[TSubscriptionInstance], m
         self.ws: typing.Optional[ReconnectingWebsocket] = None
         self.pong: BehaviorSubject = BehaviorSubject(datetime.now())
         self._pong_subscription: typing.Optional[Disposable] = None
+        self.last_call = datetime.now()
 
     @abc.abstractmethod
     def build_request(self) -> str:
@@ -91,6 +92,7 @@ class WebSocketSubscription(Disposable, typing.Generic[TSubscriptionInstance], m
             self.ws = None
 
     def _on_item(self, response: typing.Dict[str, typing.Any]) -> None:
+        # print(f'*****************\n>> {self}\n{response}\n')
         if "method" not in response:
             id: int = int(response["id"])
             if id == self.id:
@@ -146,6 +148,7 @@ class WebSocketAccountSubscription(WebSocketSubscription[TSubscriptionInstance])
         super().__init__(context, address, constructor)
 
     def build_request(self) -> str:
+        print(f'>>>>>>>>>>>>> {str(self.context.client.commitment)}')
         return """
 {
     "jsonrpc": "2.0",

@@ -234,6 +234,8 @@ def build_orderbook_watcher(context: Context, manager: WebSocketSubscriptionMana
         updatable_orderbook.asks = new_asks
         return updatable_orderbook
     bids_subscription = WebSocketAccountSubscription[OrderBook](context, orderbook_addresses[0], _update_bids)
+    print(f'>>> bids: {orderbook_addresses[0]}')
+    print(f'>>> asks: {orderbook_addresses[1]}')
     manager.add(bids_subscription)
     asks_subscription = WebSocketAccountSubscription[OrderBook](context, orderbook_addresses[1], _update_asks)
     manager.add(asks_subscription)

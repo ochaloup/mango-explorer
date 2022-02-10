@@ -7,6 +7,7 @@ import simplejson as json
 import lzma
 import typing
 import datetime
+from datetime import timedelta
 
 import mango
 
@@ -66,8 +67,18 @@ class _DataSaverObserver(rx.core.Observer):
         self._last_data: str = ''
         self._observation_counter: int = 1
         self._open_new_file()
+        self.last_hit = datetime.datetime.now()
 
     def _on_next_core(self, data: any) -> None:
+        if self.data_type != DataSaverTypes.OrderBook:
+            return
+        else:
+            delta: timedelta = datetime.datetime.now() - self.last_hit
+            self.last_hit = datetime.datetime.now()
+            time_taken: float = delta.seconds + delta.microseconds / 1000000
+            self.data_saver.logger.info(f"OrderBook hit takes {time_taken}")
+            return
+
         # no data change from last execution, skipping to save
         json_string_data = self._dump_json(data)
         if json_string_data == self._last_data:
