@@ -564,7 +564,7 @@ class CompoundRPCCaller(HTTPProvider):
         if len(self.__providers) > 1:
             self.__providers = [*self.__providers[1:], *self.__providers[:1]]
             self.on_provider_change()
-        self._logger.debug(f"Told to shift provider - now using: {self.__providers[0]}")
+        self._logger.info(f"Told to shift provider - now using: {self.__providers[0]}")
 
     def make_request(self, method: RPCMethod, *params: typing.Any) -> RPCResponse:
         all_exceptions: typing.List[Exception] = []
@@ -576,7 +576,7 @@ class CompoundRPCCaller(HTTPProvider):
                     # Rebase the providers' list so we continue to use this successful one (until it fails)
                     self.__providers = [*self.__providers[successful_index:], *self.__providers[:successful_index]]
                     self.on_provider_change()
-                    self._logger.debug(f"Shifted provider - now using: {self.__providers[0]}")
+                    self._logger.info(f"Shifted provider - now using: {self.__providers[0]}")
                 return result
             except (requests.exceptions.HTTPError,
                     requests.exceptions.ConnectionError,
