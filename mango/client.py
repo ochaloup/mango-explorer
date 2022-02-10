@@ -544,6 +544,8 @@ class CompoundRPCCaller(HTTPProvider):
         self.name: str = name
         self.on_provider_change: typing.Callable[[], None] = lambda: None
 
+        self._logger.info(f"Starting instance with provider: {self.__providers[0]}")
+
     @property
     def current(self) -> RPCCaller:
         return self.__providers[0]
